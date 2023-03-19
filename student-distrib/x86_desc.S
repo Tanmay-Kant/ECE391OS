@@ -85,6 +85,12 @@ ldt_desc_ptr:
 gdt_bottom:
 
     .align 16
+        .word 0 # padding
+gdt_desc:
+    .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
+    .long gdt    # linear address of the GDT 
+
+
 ldt:
     .rept 4
     .quad 0

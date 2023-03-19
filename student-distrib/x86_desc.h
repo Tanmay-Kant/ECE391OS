@@ -114,6 +114,7 @@ typedef struct __attribute__((packed)) tss_t {
 /* Some external descriptors declared in .S files */
 extern x86_desc_t gdt_desc;
 
+
 extern uint16_t ldt_desc;
 extern uint32_t ldt_size;
 extern seg_desc_t ldt_desc_ptr;
