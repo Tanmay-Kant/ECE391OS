@@ -34,7 +34,7 @@ int idt_test(){
 
 	int i;
 	int result = PASS;
-	for (i = 0; i < 10; ++i){
+	for (i = 0; i < 13; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
@@ -46,6 +46,13 @@ int idt_test(){
 }
 
 // add more tests here
+void divide_by_zero_exception_test(){
+	TEST_HEADER;
+	int zero = 0;
+	int rand = 12;
+	int result;
+	result = rand / zero;
+}
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */

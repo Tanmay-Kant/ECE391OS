@@ -90,7 +90,7 @@ gdt_desc:
     .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
     .long gdt    # linear address of the GDT 
 
-
+    .align 16
 ldt:
     .rept 4
     .quad 0
