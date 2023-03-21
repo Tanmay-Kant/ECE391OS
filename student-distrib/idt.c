@@ -23,40 +23,33 @@ static char* exception_name_list[20] = {
     "SIMD Floating-Point Exception",
 };
 
-void idt_init(){
-
+void idt_init(void) {
     unsigned int i;
-
     for(i = 0; i < NUM_VEC; i++){
-        idt[i].size = 0x1; //size is always 32bit
         idt[i].seg_selector = KERNEL_CS;
-        idt[i].reserved0 = 0x0;
-        idt[i].reserved1 = 0x1;
-        idt[i].reserved2 = 0x1;
-        idt[i].reserved4 = 0x0;
-        idt[i].present = 0x0; 
-
-        if(i < 0x15 && i != 0x0F){ //set corresponding bits in gate descriptor for exceptions
-            idt[i].present = 0x1;
-            idt[i].reserved3 = 0x0;
-            idt[i].dpl = 0x0;
-        }
-        else if(i == 0x21 || i == 0x28){ //set corresponding bits in gate descriptor for interrupts
-            idt[i].present = 0x1;
+        idt[i].present = 1;
+        idt[i].dpl = 0x3;
+        idt[i].reserved0 = 0;
+        idt[i].size = 1;
+        idt[i].reserved1 = 1;
+        idt[i].reserved2 = 1;
+        idt[i].reserved3 = 0;
+        idt[i].reserved4 = 0;
+        //if(i > 0x13 || i == 0x0F)
+        if(i < 32 || i == 0x0F)
+        {
+            //idt[i].present = 0;
             idt[i].reserved3 = 0x1;
             idt[i].dpl = 0x0;
-            
         }
-        else if(i == 0x80){ //set dpl to ring 3 for userspace
-            idt[i].present = 0x1;
-            idt[i].reserved3 = 0x0;
-            idt[i].dpl = 0x3;
-        }
-        
     }
     
     SET_IDT_ENTRY(idt[0x00], division_error);
-    SET_IDT_ENTRY(idt[0x01], debug);
+    SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], system_calls);
+    idt[SYSCALL_VEC_NUM].present = 1;
+    idt[SYSCALL_VEC_NUM].dpl = 0x3;
+    //lidt(idt_desc_ptr);
+    /*SET_IDT_ENTRY(idt[0x01], debug);
     SET_IDT_ENTRY(idt[0x02], non_maskable_interrupt);
     SET_IDT_ENTRY(idt[0x03], breakpoint);
     SET_IDT_ENTRY(idt[0x04], overflow);
@@ -74,13 +67,7 @@ void idt_init(){
     SET_IDT_ENTRY(idt[0x11], alignment_check);
     SET_IDT_ENTRY(idt[0x12], machine_check);
     SET_IDT_ENTRY(idt[0x13], simd_floating_point_exception);
-
-   // SET_IDT_ENTRY(idt[0x21], keyboard_linkage);
-   // SET_IDT_ENTRY(idt[0x28], rtc_linkage);
-
-    SET_IDT_ENTRY(idt[0x80], system_calls);
-
-    
+*/
 }
     void exception_handler(uint32_t vector){
         while(1){
