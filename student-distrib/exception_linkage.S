@@ -2,15 +2,20 @@
 
 
 
- #define EXCEPTION_ERROR(name,vector)   \
+#define EXCEPTION_ERROR(name,vector)   \
     .GLOBL name   ;\
-    name:         ;\
-            pushl $vector  ;\
-            call exception_handler      ;\
-            addl $4, %esp       ;\
-            addl $4, %esp  ;\
-            ret           
-
+    .align  4                           ;\
+    name:                               ;\
+//        pushl   $0                      ;\
+        pushfl                          ;\
+        pushal                          ;\
+        pushl   $vector                     ;\
+        call    exception_handler       ;\
+        addl    $4, %esp                ;\
+        popal                           ;\
+        popfl                           ;\
+//        addl    $4, %esp                ;\
+        iret
 
 EXCEPTION_ERROR(division_error, 0x00)
 EXCEPTION_ERROR(debug, 0x01)
