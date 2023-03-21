@@ -25,48 +25,33 @@ static char* exception_name_list[20] = {
 
 void idt_init(){
 
-    lidt(idt_desc_ptr);
     unsigned int i;
 
     for(i = 0; i < NUM_VEC; i++){
-        if(i != 0x0F || i <= 0x13){ //set all 20 exceptions except 15(reserved) to present
-            idt[i].present = 0x1;
-            idt[i].reserved4 = 0x0;
-            idt[i].reserved3 = 0x0;
-            idt[i].reserved2 = 0x1;     
-            idt[i].reserved1 = 0x1;
-            idt[i].reserved0 = 0x0;
-            idt[i].dpl = 0x0;
-            idt[i].seg_selector = KERNEL_CS;
-            idt[i].size = 0x1;
-        }
-        else if(i == 0x21 || i == 0x28){ //if it is at a hardware interrupt (keyboard and rtc)
-            idt[i].present = 0x1;
-            idt[i].reserved4 = 0x0;
-            idt[i].reserved3 = 0x1; //change for hardware interrupts
-            idt[i].reserved2 = 0x1;     
-            idt[i].reserved1 = 0x1;
-            idt[i].reserved0 = 0x0;
-            idt[i].dpl = 0x0;
-            idt[i].seg_selector = KERNEL_CS;
-            idt[i].size = 0x1; //size is 32 bits
-        }
-        else if(i == 0x80){ //system call, set dpl to ring 3
-            idt[i].present = 0x1;
-            idt[i].reserved4 = 0x0;
-            idt[i].reserved3 = 0x0;
-            idt[i].reserved2 = 0x1;
-            idt[i].reserved1 = 0x1;
-            idt[i].reserved0 = 0x0;
-            idt[i].dpl = 0x3; //Userspace (ring 3)
-            idt[i].seg_selector = KERNEL_CS;
-            idt[i].size = 0x1;
-        }
-        else{
-            idt[i].present = 0x0; //set present bit of all other interrupts to 0
-        }
+        idt[i].size = 0x1; //size is always 32bit
+        idt[i].seg_selector = KERNEL_CS;
+        idt[i].reserved0 = 0x0;
+        idt[i].reserved1 = 0x1;
+        idt[i].reserved2 = 0x1;
+        idt[i].reserved4 = 0x0;
+        idt[i].present = 0x0; 
 
-    
+        if(i < 0x15 && i != 0x0F){ //set corresponding bits in gate descriptor for exceptions
+            idt[i].present = 0x1;
+            idt[i].reserved3 = 0x0;
+            idt[i].dpl = 0x0;
+        }
+        else if(i == 0x21 || i == 0x28){ //set corresponding bits in gate descriptor for interrupts
+            idt[i].present = 0x1;
+            idt[i].reserved3 = 0x1;
+            idt[i].dpl = 0x0;
+            
+        }
+        else if(i == 0x80){ //set dpl to ring 3 for userspace
+            idt[i].present = 0x1;
+            idt[i].reserved3 = 0x0;
+            idt[i].dpl = 0x3;
+        }
         
     }
     
@@ -90,12 +75,16 @@ void idt_init(){
     SET_IDT_ENTRY(idt[0x12], machine_check);
     SET_IDT_ENTRY(idt[0x13], simd_floating_point_exception);
 
+   // SET_IDT_ENTRY(idt[0x21], keyboard_linkage);
+   // SET_IDT_ENTRY(idt[0x28], rtc_linkage);
+
     SET_IDT_ENTRY(idt[0x80], system_calls);
 
     
 }
-    void exception_handler(uint32_t vector, uint32_t error){
+    void exception_handler(uint32_t vector){
+        while(1){
         printf("\nException Found: %s (%d) \n\n", exception_name_list[vector], vector);
-        printf("\nError Code: %#x\n", error);
+        }
     }
 
