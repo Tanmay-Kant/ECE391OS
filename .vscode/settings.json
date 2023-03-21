@@ -1,3 +1,8 @@
 {
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "paging.h": "c",
+        "lib.h": "c",
+        "x86_desc.h": "c"
+    }
 }

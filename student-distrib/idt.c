@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "exception_linkage.h"
 
 
 static char* exception_name_list[20] = {
@@ -41,15 +42,22 @@ void idt_init(void) {
             //idt[i].present = 0;
             idt[i].reserved3 = 0x1;
             idt[i].dpl = 0x0;
+            if( i < 14){
+                idt[i].present = 1;
+            }
         }
     }
     
-    SET_IDT_ENTRY(idt[0x00], division_error);
-    SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], system_calls);
+    // write function to change present only for exception and interrupt cases
+    // write out the handlers for exceptions and interrupts - initialize all the bits for the idt 
     idt[SYSCALL_VEC_NUM].present = 1;
     idt[SYSCALL_VEC_NUM].dpl = 0x3;
+    SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], system_calls);
+   
     //lidt(idt_desc_ptr);
-    /*SET_IDT_ENTRY(idt[0x01], debug);
+    
+    SET_IDT_ENTRY(idt[0x00], division_error);
+    SET_IDT_ENTRY(idt[0x01], debug);
     SET_IDT_ENTRY(idt[0x02], non_maskable_interrupt);
     SET_IDT_ENTRY(idt[0x03], breakpoint);
     SET_IDT_ENTRY(idt[0x04], overflow);
@@ -67,11 +75,11 @@ void idt_init(void) {
     SET_IDT_ENTRY(idt[0x11], alignment_check);
     SET_IDT_ENTRY(idt[0x12], machine_check);
     SET_IDT_ENTRY(idt[0x13], simd_floating_point_exception);
-*/
+
 }
-    void exception_handler(uint32_t vector){
+    void exception_handler(int index){
         while(1){
-        printf("\nException Found: %s (%d) \n\n", exception_name_list[vector], vector);
+        printf("\nException Found: %s \n", exception_name_list[index]);
         }
     }
 

@@ -11,11 +11,13 @@ uint8_t slave_mask;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
+    unsigned long flag;
+    cli_and_save(flag);
 
     //disables all interrupts and initializes masks
     master_mask = mask; 
     slave_mask = mask; 
-
+    // mask all interrupts before going to the ICW stuff
 
     outb(ICW1, MASTER_8259_PORT);
     outb(ICW1, SLAVE_8259_PORT);
@@ -38,6 +40,10 @@ void i8259_init(void) {
     // + 1 is offset to go from the command port to the data ports
     outb(slave_mask, SLAVE_8259_PORT + 1);
     outb(master_mask, MASTER_8259_PORT + 1);
+
+    restore_flags(flag);
+
+    
     
 }
 
@@ -45,11 +51,17 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     if(irq_num > irq_max){return;}
     
-    if(irq_num > irq_max_master){
+    if(irq_num >= irq_max_master){
         // fixes new value to the slave mask 
-        slave_mask = slave_mask & ~(1 << (irq_num - irq_max_master));
+        slave_mask &= ~(1 << (irq_num - irq_max_master));
         // + 1 is offset to go from the command port to the data ports 
+        // unmask the slave pic from the master picks side - if not active cant get the interrupt
         outb(slave_mask, SLAVE_8259_PORT + 1);
+
+        // unmasks second bit to send data from slave pic 1111 1101
+        master_mask &= 0xFB;
+        // + 1 is offset to go from the command port to the data ports 
+        outb(master_mask, MASTER_8259_PORT + 1);
     }
     else{
         // fixes new value to the master mask 
@@ -63,7 +75,7 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     if(irq_num > irq_max){return;}
     
-    if(irq_num > irq_max_master){
+    if(irq_num >= irq_max_master){
         // fixes new value to the slave mask
         slave_mask = slave_mask | (1 << (irq_num - irq_max_master));
         // + 1 is offset to go from the command port to the data ports 

@@ -1,7 +1,7 @@
 /* kernel.c - the C part of the kernel
  * vim:ts=4 noexpandtab
  */
-
+//"c:\qemu-1.5.0-win32-sdl\qemu-system-i386w.exe" -hda "Z:\mp3\student-distrib\mp3.img" -m 256 -gdb tcp:127.0.0.1:1234 -S -name mp3
 #include "multiboot.h"
 #include "x86_desc.h"
 #include "lib.h"
@@ -9,7 +9,9 @@
 #include "debug.h"
 #include "tests.h"
 
-#define RUN_TESTS
+//#include "paging.h"
+
+//#define RUN_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -136,9 +138,10 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
 
-    /* Init the PIC */
+    idt_init();
+    
     i8259_init();
-
+    //paging_init();
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
