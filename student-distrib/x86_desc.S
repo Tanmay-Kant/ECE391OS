@@ -9,8 +9,12 @@
 .globl ldt_size, tss_size
 .globl gdt_desc, ldt_desc, tss_desc
 .globl tss, tss_desc_ptr, ldt, ldt_desc_ptr
+.globl gdt_desc_ptr, gdt
 .globl gdt_ptr
 .globl idt_desc_ptr, idt
+
+ # Make GDT pointer available to boot.S
+
 
 .align 4
 
@@ -75,6 +79,9 @@ gdt_ptr:
     .quad 0x00CFF2000000FFFF
 
     # Set up an entry for TSS
+gdt_desc_ptr:
+    .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
+    .long gdt    # linear address of the GDT 
 tss_desc_ptr:
     .quad 0
 
@@ -85,12 +92,12 @@ ldt_desc_ptr:
 gdt_bottom:
 
     .align 16
-        .word 0 # padding
-gdt_desc:
-    .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
-    .long gdt    # linear address of the GDT 
-
-    .align 16
+#    .word 0 # padding
+#gdt_desc:
+#    .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
+#    .long gdt    # linear address of the GDT 
+#
+#    .align 16
 ldt:
     .rept 4
     .quad 0

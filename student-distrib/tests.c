@@ -7,9 +7,9 @@
 
 /* format these macros as you see fit */
 #define TEST_HEADER 	\
-	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
+	//printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
 #define TEST_OUTPUT(name, result)	\
-	printf("[TEST %s] Result = %s\n", name, (result) ? "PASS" : "FAIL");
+	//printf("[TEST %s] Result = %s\n", name, (result) ? "PASS" : "FAIL");
 
 static inline void assertion_failure(){
 	/* Use exception #15 for assertions, otherwise
@@ -62,8 +62,6 @@ void divide_by_zero_exception_test(){
 	int rand = 12;
 	int result;
 	result = rand / zero;
-
-	return 0;
 
 }
 
