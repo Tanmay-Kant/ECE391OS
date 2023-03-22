@@ -11,7 +11,7 @@
 void paging_init(){
     int i; 
 
-    //pt 
+    //pt - 1024 is size of the pages
     for (i = 0; i < 1024; i++) {
         // sets the case for the vid memory
         if (i == 0xB8){
@@ -22,45 +22,45 @@ void paging_init(){
             page_table[i].p = 0;
             page_table[i].addr= 0;
         }
-        page_table[i].pcd = 0;
+        page_table[i].pd = 0;
         page_table[i].rw = 1;
         page_table[i].us = 0;
-        page_table[i].pwt = 0;
+        page_table[i].pt = 0;
         page_table[i].a = 0;
         page_table[i].d = 0 ;
         page_table[i].pat= 0;
-        page_table[i].g = 1;
+        page_table[i].gp = 1;
         page_table[i].avl = 0;
     }
-    // initalizes the page directory for all cases
+    // initalizes the page directory for all cases - 1024 size of pages
     for (i = 0; i < 1024; i++) {
         page_directory[i].rw = 1;
         page_directory[i].us = 0;
-        page_directory[i].pwt = 0;
-        page_directory[i].pcd = 0;
+        page_directory[i].pt = 0;
+        page_directory[i].pd = 0;
         page_directory[i].a = 0;
         page_directory[i].d = 0;
-        page_directory[i].g = 0;
+        page_directory[i].gp = 0;
         // sets page directory for the video memory segment 
         if (i == 0){
             page_directory[i].p = 1;
             page_directory[i].res = 1;
             page_directory[i].ps = 0;
-            page_directory[i].addrlong = (uint32_t)page_table >> 12;
+            page_directory[i].addrl = (uint32_t)page_table >> 12;
         }
         // sets page directory for the kernel memory segment
         else if (i == 1){
             page_directory[i].p = 1;
             page_directory[i].res = 1;
             page_directory[i].ps = 1;
-            page_directory[i].addrlong = 1 << 10;
+            page_directory[i].addrl = 1 << 10;
         }
         // initialize present and other values for all other cases
         else{
             page_directory[i].p = 0;
             page_directory[i].res = 0;
             page_directory[i].ps = 0;
-            page_directory[i].addrlong = 0;
+            page_directory[i].addrl = 0;
         }
         
     }
