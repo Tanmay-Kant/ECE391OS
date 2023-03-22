@@ -7,7 +7,7 @@ void keyboard_init(){
 }
 
 void keyboard_handler(){
-
+    printf("pain\n");
     inb(0x60); //reads data port from the keyboard controller
     send_eoi(1); //send end of interrupt with IRQ1(keyboard interrupt)
 }

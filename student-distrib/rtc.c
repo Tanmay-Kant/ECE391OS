@@ -26,7 +26,7 @@ void rtc_init(){
 
 void rtc_handler(){
     cli();
-    //test_interrupts(); //used to test RTC, increments video memory
+    test_interrupts(); //used to test RTC, increments video memory
     printf("RTC running");
     outb(0x0C, 0x70); //select register C
     inb(0x71);        //throw away contents

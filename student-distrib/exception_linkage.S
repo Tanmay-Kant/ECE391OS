@@ -32,7 +32,7 @@
         name:                           ;\
                 pushal                  ;\
                 pushfl                  ;\
-                call exception_handler  ;\
+                call vector  ;\
                 popfl                   ;\
                 popal                   ;\
                 iret
