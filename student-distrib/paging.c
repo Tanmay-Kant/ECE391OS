@@ -1,13 +1,19 @@
 #include "paging.h"
 //#include "lib.h"
 
-
+/* void paging_init();
+* Inputs: none
+* Return: none
+* Description: intializes paging throughout the whole system
+* side effects: sets paging through out the system with specific cases for the kernel page directory and the first 4 kb including video memory
+*/
 
 void paging_init(){
     int i; 
 
     //pt 
     for (i = 0; i < 1024; i++) {
+        // sets the case for the vid memory
         if (i == 0xB8){
             page_table[i].p = 1;
             page_table[i].addr = 0xB8;
@@ -26,6 +32,7 @@ void paging_init(){
         page_table[i].g = 1;
         page_table[i].avl = 0;
     }
+    // initalizes the page directory for all cases
     for (i = 0; i < 1024; i++) {
         page_directory[i].rw = 1;
         page_directory[i].us = 0;
@@ -34,18 +41,21 @@ void paging_init(){
         page_directory[i].a = 0;
         page_directory[i].d = 0;
         page_directory[i].g = 0;
+        // sets page directory for the video memory segment 
         if (i == 0){
             page_directory[i].p = 1;
             page_directory[i].res = 1;
             page_directory[i].ps = 0;
             page_directory[i].addrlong = (uint32_t)page_table >> 12;
         }
+        // sets page directory for the kernel memory segment
         else if (i == 1){
             page_directory[i].p = 1;
             page_directory[i].res = 1;
             page_directory[i].ps = 1;
             page_directory[i].addrlong = 1 << 10;
         }
+        // initialize present and other values for all other cases
         else{
             page_directory[i].p = 0;
             page_directory[i].res = 0;

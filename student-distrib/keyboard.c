@@ -12,19 +12,20 @@ char buttons_data[0x58] = {
 /* Reference: https://wiki.osdev.org/Interrupts#From_the_keyboard.27s_perspective */
 
 void keyboard_init(){
-    enable_irq(1); //enable IRQ1 for Keyboard Interrupt
+    enable_irq(1); //enables the keyboard interrupt line on the pic
 }
 
 void keyboard_handler(){
-    uint8_t buttons = inb(0x60);   // Intake key pressed
-    if(buttons < 0x58)     // Make sure key is within range used
+    // x60 is a post for the keyboard data - 0x58 is the number of keys that could be interpreted
+    uint8_t buttons = inb(0x60);   // grab data from the press
+    if(buttons < 0x58)     // range check 
     {
-        putc(buttons_data[buttons]);       // Place key pressed into memory and take from ASCII
-        send_eoi(1);     // End of interrupt after press
+        putc(buttons_data[buttons]);       // places key val to memory
+        send_eoi(1);     // end of interrupt
     }
     else
     {
-        send_eoi(1);     //End of interrupt after press
+        send_eoi(1);     // end of interrupt
     }
 
 }
