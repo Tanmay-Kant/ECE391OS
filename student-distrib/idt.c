@@ -60,6 +60,13 @@ void idt_init(void) {
     SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], system_calls);
    */
     //lidt(idt_desc_ptr);
+    idt[RTC_VEC_NUM].present = 1;
+    idt[RTC_VEC_NUM].reserved3 = 0x1;
+    SET_IDT_ENTRY(idt[RTC_VEC_NUM], RTC_INT);
+    idt[KEYBOARD_VEC_NUM].present = 1;
+    idt[KEYBOARD_VEC_NUM].reserved3 = 0x1;
+    SET_IDT_ENTRY(idt[KEYBOARD_VEC_NUM], KEY_INT);
+
     
     SET_IDT_ENTRY(idt[0], division_error);
     SET_IDT_ENTRY(idt[1], debug);

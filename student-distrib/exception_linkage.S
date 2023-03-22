@@ -58,7 +58,9 @@ EXCEPTION_ERROR(page_fault, 14);
 EXCEPTION_HANDLE(floating_point_exception, 16);
 EXCEPTION_ERROR(alignment_check, 17);
 EXCEPTION_HANDLE(machine_check, 18);
-EXCEPTION_HANDLE(simd_floating_point_exception, 19);   
+EXCEPTION_HANDLE(simd_floating_point_exception, 19);
+INTERRUPTS(RTC_INT, rtc_handler);
+INTERRUPTS(KEY_INT, keyboard_handler);      
 
 
 
