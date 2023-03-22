@@ -42,7 +42,7 @@ void idt_init(void) {
             //idt[i].present = 0;
             idt[i].reserved3 = 0x1;
             idt[i].dpl = 0x0;
-            if( i < 14){
+            if( i < 20){
                 idt[i].present = 1;
             }
         }
