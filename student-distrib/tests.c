@@ -63,6 +63,8 @@ void divide_by_zero_exception_test(){
 	int result;
 	result = rand / zero;
 
+	//return 0;
+
 }
 
 /* Exception Test - Example
@@ -76,6 +78,18 @@ void general_exception_test(){
 		asm volatile("int $0x11"); //0x11 produces alignment check
 }
 
+void sys_call_test(){
+	asm volatile("int $0x80");
+}
+
+void rtc_test(){
+	int i;
+	for(i = 0; i < 10; i++){
+		rtc_handler();
+	}
+}
+
+
 /* Exception Test - Example
  * 
  * dereferencing a NULL pointer, should cause an exception
@@ -87,7 +101,11 @@ void dereferencing_null_test(){
 	int* ptr = NULL;
 	int x;
 	x = *ptr;
+
+	int *a = 0xb8001;
+  	printf("%x\n", *a);
 }
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -97,9 +115,9 @@ void dereferencing_null_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	//divide_by_zero_exception_test();
+	//rtc_test();
+	//TEST_OUTPUT("idt_test", idt_test());
 	//general_exception_test();
 	//dereferencing_null_test();
-	// launch your tests here
+	//launch your tests here
 }

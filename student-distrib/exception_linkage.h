@@ -1,6 +1,10 @@
 #if !defined(_EXCEPTION_LINKAGE_H_)
 #define _EXCEPTION_LINKAGE_H_
 
+//extern void KEYBOARD_INT();
+extern void RTC_INT();
+extern void KEY_INT();
+
 
 extern void division_error(void);
 extern void debug(void);
