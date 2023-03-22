@@ -9,7 +9,12 @@
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
 
-/* Initialize the 8259 PIC */
+
+/* void i8259_init(void));
+ * Inputs: none
+ * Return Value: none
+ * Function: Initialize the 8259 PIC  */
+
 void i8259_init(void) {
     unsigned long flag;
     cli_and_save(flag);
@@ -46,8 +51,11 @@ void i8259_init(void) {
     
     
 }
+/* void enable_irq(uint32_t irq_num));
+ * Inputs: irq_num
+ * Return Value: none
+ * Function: Enable (unmask) the specified IRQ   */
 
-/* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
     if(irq_num > irq_max){return;}
     
@@ -71,6 +79,11 @@ void enable_irq(uint32_t irq_num) {
     }
 }
 
+/* void disable_irq(uint32_t irq_num));
+ * Inputs: irq_num
+ * Return Value: none
+ * Function: Disable (mask) the specified IRQ   */
+
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
     if(irq_num > irq_max){return;}
@@ -89,7 +102,12 @@ void disable_irq(uint32_t irq_num) {
     }
 }
 
-/* Send end-of-interrupt signal for the specified IRQ */
+/* void send_eoi(uint32_t irq_num));
+ * Inputs: irq_num
+ * Return Value: none
+ * Function: Send end-of-interrupt signal for the specified IRQ   */
+
+
 void send_eoi(uint32_t irq_num) {
     if(irq_num > irq_max){return;}
     if(irq_num < irq_max_master){
