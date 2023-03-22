@@ -20,7 +20,7 @@ typedef unsigned short uint16_t;
 
 typedef char int8_t;
 typedef unsigned char uint8_t;
-/*
+
 typedef union pde_m{
     uint32_t val;
     struct{
@@ -80,7 +80,10 @@ typedef union pd{
     pde_m m_pde;
 }pd;
 
-*/
+
+extern pd page_dir[1024] __attribute__((aligned (0x1000)));
+extern pte_k page_tab[1024] __attribute__((aligned (0x1000)));
+//extern pte_k u_map[1024] __attribute__((aligned(0x1000)));
 
 #endif /* ASM */
 

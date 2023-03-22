@@ -63,7 +63,7 @@ void divide_by_zero_exception_test(){
 	int result;
 	result = rand / zero;
 
-	return 0;
+	//return 0;
 
 }
 
@@ -101,6 +101,7 @@ void dereferencing_null_test(){
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	//divide_by_zero_exception_test();
+	//int x = 15/0;
 	//general_exception_test();
 	//dereferencing_null_test();
 	// launch your tests here

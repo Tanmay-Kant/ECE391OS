@@ -13,7 +13,7 @@
 
 void idt_init(); //Initializes the IDT and sets IDT entries 
 
-void exception_handler(int index); //printing support for the corresponding exception
+void exception_handler(int32_t index); //printing support for the corresponding exception
 
 void system_calls(void);
 

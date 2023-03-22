@@ -10,6 +10,7 @@
 .globl gdt_desc, ldt_desc, tss_desc
 .globl tss, tss_desc_ptr, ldt, ldt_desc_ptr
 .globl gdt_ptr
+.globl gdt_desc_ptr, gdt
 .globl idt_desc_ptr, idt
 
 .align 4
@@ -82,15 +83,17 @@ tss_desc_ptr:
 ldt_desc_ptr:
     .quad 0
 
-gdt_bottom:
-
-    .align 16
-        .word 0 # padding
-gdt_desc:
+gdt_desc_ptr:
     .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
     .long gdt    # linear address of the GDT 
 
     .align 16
+
+gdt_bottom:
+
+    .align 16
+
+
 ldt:
     .rept 4
     .quad 0
@@ -99,6 +102,7 @@ ldt_bottom:
 
 .align 4
     .word 0 # Padding
+
 idt_desc_ptr:
     .word idt_bottom - idt - 1
     .long idt
@@ -112,3 +116,4 @@ _idt:
     .endr
 
 idt_bottom:
+    .align 4096
