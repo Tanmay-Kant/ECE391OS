@@ -1,17 +1,17 @@
 # exception_linkage.S - sets up linkage macro for all exceptions based on if they have an error code
-
+#linkage macro reference from 3.1 review slides
 
 
 #define EXCEPTION_ERROR(name,vector)   \
     .GLOBL name   ;\
     name:                               ;\
-        pushfl                          ;\
-        pushal                          ;\
-        pushl	$vector                 ;\
+        pushfl                          ;\  
+        pushal                          ;\  
+        pushl	$vector                 ;\  
         call    exception_handler       ;\
-        addl    $8, %esp                ;\
-        popal                           ;\
-        popfl                           ;\
+        addl    $8, %esp                ;\  
+        popal                           ;\ 
+        popfl                           ;\     
         iret
 
 
@@ -32,7 +32,7 @@
         name:                           ;\
                 pushal                  ;\
                 pushfl                  ;\
-                call vector  ;\
+                call vector             ;\
                 popfl                   ;\
                 popal                   ;\
                 iret

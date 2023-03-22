@@ -75,7 +75,7 @@ void divide_by_zero_exception_test(){
  * Side Effects: None
  */
 void general_exception_test(){
-		asm volatile("int $0x11"); //0x11 produces alignment check
+		asm volatile("int $0x11"); //0x11 produces machine check
 }
 
 void sys_call_test(){

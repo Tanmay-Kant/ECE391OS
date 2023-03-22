@@ -1,7 +1,7 @@
 #include "idt.h"
 #include "exception_linkage.h"
 
-
+/* List of Strings for Exceptions */
 static char* exception_name_list[20] = {
     "Division Error",
     "Debug",
@@ -24,6 +24,13 @@ static char* exception_name_list[20] = {
     "SIMD Floating-Point Exception",
 };
 
+/* void idt_init(void);
+ * Inputs: void
+ * Return Value: none
+ * Function: Sets IDT entries of all 20 exceptions, hardware interrupts(keyboard and rtc), and system call
+ * Sets corresponding bits of the gate descriptor, set dpl bit to 3 for system call, reserved3 bit to 1 for rtc and keyboard,
+ * IDT entries not used have their present bit set to 0  */
+
 void idt_init(void) {
     unsigned int i;
     for(i = 0; i < NUM_VEC; i++){
@@ -37,7 +44,7 @@ void idt_init(void) {
         idt[i].reserved3 = 0;
         idt[i].reserved4 = 0;
         //if(i > 0x13 || i == 0x0F)
-        if(i < 32 && i != 15)
+        if(i < 32 && i != 15) //set the reserved3 bit for exceptions
         {
             //idt[i].present = 0;
             idt[i].reserved3 = 1;
@@ -46,20 +53,13 @@ void idt_init(void) {
         
         }
         if ( i == SYSCALL_VEC_NUM){
-            idt[i].dpl = 3;
+            idt[i].dpl = 3;         //set dpl to ring3 for userspace
 
         }
-        idt[i].seg_selector = KERNEL_CS;
+        idt[i].seg_selector = KERNEL_CS; //segment selector is always KERNEL_CS
     }
     
-    // write function to change present only for exception and interrupt cases
-    // write out the handlers for exceptions and interrupts - initialize all the bits for the idt 
-    /*
-    idt[SYSCALL_VEC_NUM].present = 1;
-    idt[SYSCALL_VEC_NUM].dpl = 0x3;
-    SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], system_calls);
-   */
-    //lidt(idt_desc_ptr);
+   
     idt[RTC_VEC_NUM].present = 1;
     idt[RTC_VEC_NUM].reserved3 = 0x1;
     SET_IDT_ENTRY(idt[RTC_VEC_NUM], RTC_INT);
@@ -89,6 +89,15 @@ void idt_init(void) {
     SET_IDT_ENTRY(idt[19], simd_floating_point_exception);
 
 }
+
+
+/* void exception_handler(int32_t index);
+ * Inputs: index(IDT vector number to determine which exception should be printed)
+ * Return Value: none
+ * Function: Prints the corresponding exception based on the list of strings above as well as the vector that is passed
+ * in the exception_linkage.S file */
+ 
+
     void exception_handler(int32_t index){
         printf("\nException Found: %s \n", exception_name_list[index]);
         while(1){

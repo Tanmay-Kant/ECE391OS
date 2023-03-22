@@ -11,9 +11,24 @@ char buttons_data[0x58] = {
 
 /* Reference: https://wiki.osdev.org/Interrupts#From_the_keyboard.27s_perspective */
 
+
+ /* void keyboard_init();
+ * Inputs: void
+ * Return Value: none
+ * Function: enables IRQ1 for Keyboard Interrupt*/
+
 void keyboard_init(){
     enable_irq(1); //enables the keyboard interrupt line on the pic
 }
+
+
+ /* void keyboard_handler();
+ * Inputs: void
+ * Return Value: none
+ * Function: Handler in order to read data port from the keyboard controller and prints the corresponding character 
+ * to the screen based on what key is pressed and released which is then ended by send_eoi to indicate end of 
+ * interrupt */
+
 
 void keyboard_handler(){
     // x60 is a post for the keyboard data - 0x58 is the number of keys that could be interpreted
