@@ -80,9 +80,7 @@ gdt_ptr:
     .quad 0x00CFF2000000FFFF
 
     # Set up an entry for TSS
-gdt_desc_ptr:
-    .word gdt_bottom - gdt - 1 # the size of the table in bytes subtracted by 1 
-    .long gdt    # linear address of the GDT 
+
 tss_desc_ptr:
     .quad 0
 
