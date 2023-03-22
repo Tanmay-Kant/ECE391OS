@@ -78,6 +78,13 @@ void general_exception_test(){
 		asm volatile("int $0x11"); //0x11 produces alignment check
 }
 
+void rtc_test(){
+	int i;
+	for(i = 0; i < 10; i++){
+		rtc_handler();
+	}
+}
+
 /* Exception Test - Example
  * 
  * dereferencing a NULL pointer, should cause an exception
@@ -100,7 +107,7 @@ void dereferencing_null_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	//rtc_init();
+	//rtc_test();
 	//TEST_OUTPUT("idt_test", idt_test());
 	//general_exception_test();
 	//dereferencing_null_test();

@@ -9,12 +9,12 @@
 */
 
 void rtc_init(){ 
-    printf("RTC Init");
     outb(0x8B, 0x70); //select Register B, and disable NMI
     char prev = inb(0x71); //read the current value of register B
     outb(0x8B, 0x70); //set the index again
     outb(prev | 0x40, 0x71); //write the previous value ORed with 0x40. This turns on bit 6 of Register B
     enable_irq(8); //enable IRQ with 8 for RTC IRQ num
+    printf("RTC Init");
 }
 
 /* rtc_handler()
@@ -28,7 +28,7 @@ void rtc_handler(){
     cli();
     test_interrupts(); //used to test RTC, increments video memory
     printf("RTC running");
-    outb(0x0C, 0x70); //select register C
+    outb(0x8C, 0x70); //select register C
     inb(0x71);        //throw away contents
     send_eoi(8); //send EOI with 8(RTC IRQ num)
     sti();
