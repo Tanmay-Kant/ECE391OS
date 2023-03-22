@@ -1,0 +1,14 @@
+Bug: Error stating ./debug.sh when trying to sudo make from wfh setup
+
+Fix: By running the commands: dos2unix debug.sh and chmod +x debug.sh, the format is converted to UNIX format which fixes the error
+
+
+Bug: no such instruction found when writing the assembly linkage macro for the exceptions
+
+Fix: By fixing the header files included as well as the ordering of the variables defined similar to the ece391syscall.S file given to us, the error was fixed.
+
+
+
+Bug: We kept on receiving a General Protection Fault when initializing the IDT.
+
+Fix: We had to modify the present bit to ensure that the present bit of only the first 20 exceptions, the keyboard and rtc interrupt, and the system call are set to 1 while the remaining IDT entries have their present bit set to 0.
