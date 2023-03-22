@@ -12,3 +12,11 @@ Fix: By fixing the header files included as well as the ordering of the variable
 Bug: We kept on receiving a General Protection Fault when initializing the IDT.
 
 Fix: We had to modify the present bit to ensure that the present bit of only the first 20 exceptions, the keyboard and rtc interrupt, and the system call are set to 1 while the remaining IDT entries have their present bit set to 0.
+
+Bug: Bounds error boot loop 
+
+Fix: there was an issue with our initialization of the gdt and we did not pass a pointer to gdt desc to load it in so we had stack corruption errors so we had to redo the gdt initalization with it
+
+Bug: Only our asm volatile test case was working 
+
+Fix: There was an error with how we called the exception handler in our linkage assembly file we re wrote a case for exception errors, errors and for interrupt handling this made us rework how we called the prints and implicitly fixed the problem
