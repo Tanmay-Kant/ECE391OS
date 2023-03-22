@@ -34,13 +34,13 @@ void paging_init(){
         page_directory[i].a = 0;
         page_directory[i].d = 0;
         page_directory[i].g = 0;
-        if (i = 0){
+        if (i == 0){
             page_directory[i].p = 1;
             page_directory[i].res = 1;
             page_directory[i].ps = 0;
             page_directory[i].addrlong = (uint32_t)page_table >> 12;
         }
-        else if (i = 1){
+        else if (i == 1){
             page_directory[i].p = 1;
             page_directory[i].res = 1;
             page_directory[i].ps = 1;

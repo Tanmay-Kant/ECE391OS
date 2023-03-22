@@ -78,12 +78,17 @@ void general_exception_test(){
 		asm volatile("int $0x11"); //0x11 produces alignment check
 }
 
+void sys_call_test(){
+	asm volatile("int $0x80");
+}
+
 void rtc_test(){
 	int i;
 	for(i = 0; i < 10; i++){
 		rtc_handler();
 	}
 }
+
 
 /* Exception Test - Example
  * 
@@ -96,6 +101,9 @@ void dereferencing_null_test(){
 	int* ptr = NULL;
 	int x;
 	x = *ptr;
+
+	int *a = 0xb8001;
+  	printf("%x\n", *a);
 }
 
 

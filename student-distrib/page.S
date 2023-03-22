@@ -9,9 +9,6 @@ loadPaging:
 	orl $0x00000010, %eax
 	movl %eax, %cr4
 
-	pushl %ebp
-	movl %esp, %ebp
-
 	movl 8(%ebp), %eax
 	movl %eax, %cr3
 

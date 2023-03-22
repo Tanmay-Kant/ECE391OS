@@ -68,9 +68,6 @@ pde_t page_directory[1024] __attribute__((aligned (4096)));
 pte_t page_table[1024] __attribute__((aligned (4096)));
 
 
-extern unsigned int * dir_pointer;
-extern unsigned int * tab_pointer;
-
 extern void paging_init();
 extern void loadPaging();
 
