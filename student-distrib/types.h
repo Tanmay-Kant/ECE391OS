@@ -20,7 +20,7 @@ typedef unsigned short uint16_t;
 
 typedef char int8_t;
 typedef unsigned char uint8_t;
-
+/*
 typedef union pde_m{
     uint32_t val;
     struct{
@@ -80,7 +80,7 @@ typedef union pd{
     pde_m m_pde;
 }pd;
 
-
+*/
 
 #endif /* ASM */
 

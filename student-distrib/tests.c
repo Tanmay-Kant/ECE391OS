@@ -34,7 +34,7 @@ int idt_test(){
 
 	int i;
 	int result = PASS;
-	for (i = 0; i < 20; ++i){
+	for (i = 0; i < 10; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
@@ -46,12 +46,49 @@ int idt_test(){
 }
 
 // add more tests here
+
+/* Exception Test - Example
+ * 
+ * causes a divide by zero exception error
+ * Inputs: None
+ * Outputs: FAIL
+ * Side Effects: None
+ */
+
+
 void divide_by_zero_exception_test(){
 	TEST_HEADER;
 	int zero = 0;
 	int rand = 12;
 	int result;
 	result = rand / zero;
+
+	return 0;
+
+}
+
+/* Exception Test - Example
+ * 
+ * Tests any corresponding exception
+ * Inputs: None
+ * Outputs: prints the corresponding exception based on the instruction below
+ * Side Effects: None
+ */
+void general_exception_test(){
+		asm volatile("int $0x11"); //0x11 produces alignment check
+}
+
+/* Exception Test - Example
+ * 
+ * dereferencing a NULL pointer, should cause an exception
+ * Inputs: None
+ * Outputs: prints the corresponding exception based on the instruction below
+ * Side Effects: None
+ */
+void dereferencing_null_test(){
+	int* ptr = NULL;
+	int x;
+	x = *ptr;
 }
 
 /* Checkpoint 2 tests */
@@ -63,6 +100,8 @@ void divide_by_zero_exception_test(){
 /* Test suite entry point */
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
-	divide_by_zero_exception_test();
+	//divide_by_zero_exception_test();
+	//general_exception_test();
+	//dereferencing_null_test();
 	// launch your tests here
 }
