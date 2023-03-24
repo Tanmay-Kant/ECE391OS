@@ -61,10 +61,10 @@ void idt_init(void) {
     
    
     idt[RTC_VEC_NUM].present = 1;
-    idt[RTC_VEC_NUM].reserved3 = 0x1;
+    idt[RTC_VEC_NUM].reserved3 = 0;
     SET_IDT_ENTRY(idt[RTC_VEC_NUM], RTC_INT);
     idt[KEYBOARD_VEC_NUM].present = 1;
-    idt[KEYBOARD_VEC_NUM].reserved3 = 0x1;
+    idt[KEYBOARD_VEC_NUM].reserved3 = 0; //check this
     SET_IDT_ENTRY(idt[KEYBOARD_VEC_NUM], KEY_INT);
 
     
