@@ -21,69 +21,60 @@ typedef unsigned short uint16_t;
 typedef char int8_t;
 typedef unsigned char uint8_t;
 
-typedef union pde_m{
-    uint32_t val;
-    struct{
-        uint32_t pr     :1;
-        uint32_t rw     :1;
-        uint32_t usr    :1;
-        uint32_t wr     :1;
-        uint32_t ca     :1;
-        uint32_t ac     :1;
-        uint32_t di     :1;
-        uint32_t ps     :1;
-        uint32_t gp     :1;
-        uint32_t av     :3;
-        uint32_t pat    :1;
-        uint32_t res    :9;
-        uint32_t addr   :10;
-    } __attribute__ ((packed));
-}pde_m;
+// struct for page directory - elected to use one struct with both items defined inside instead of 2 too avoid syntax error when referencing 
+typedef struct pde {
+    union {
+        struct {
+            uint32_t p : 1;
+            uint32_t rw : 1;
+            uint32_t us : 1;
+            uint32_t pt : 1;
+            uint32_t pd : 1;
+            uint32_t a : 1;
+            uint32_t d : 1;
+            uint32_t ps : 1;
+            uint32_t gp : 1;
+            uint32_t avl : 3;
+            uint32_t pat : 1;
+            uint32_t res : 9;
+            uint32_t addrs : 10;
+        }__attribute__ ((packed));
+        struct {
+            uint32_t p : 1;
+            uint32_t rw : 1;
+            uint32_t us : 1;
+            uint32_t pt : 1;
+            uint32_t pd : 1;
+            uint32_t a : 1;
+            uint32_t d : 1;
+            uint32_t ps : 1;
+            uint32_t gp : 1;
+            uint32_t avl : 3;
+            uint32_t addrl : 20;
+        }__attribute__ ((packed));
+    };
+} pde_t;
 
-typedef union pde_k{
-    uint32_t val;
-    struct{
-        uint32_t pr     :1;
-        uint32_t rw     :1;
-        uint32_t usr    :1;
-        uint32_t wr     :1;
-        uint32_t ca     :1;
-        uint32_t ac     :1;
-        uint32_t re     :1;
-        uint32_t ps     :1;
-        uint32_t gp     :1;
-        uint32_t av     :3;
-        uint32_t addr   :20;
-    } __attribute__ ((packed));
-}pde_k;
-
-typedef union pte_k{
-    uint32_t val;
-    struct{
-        uint32_t pr     :1;
-        uint32_t rw     :1;
-        uint32_t usr    :1;
-        uint32_t wr     :1;
-        uint32_t ca     :1;
-        uint32_t ac     :1;
-        uint32_t di     :1;
-        uint32_t pt     :1;
-        uint32_t gp     :1;
-        uint32_t av     :3;
-        uint32_t addr   :20;
-    } __attribute__ ((packed));
-
-}pte_k;
-
-typedef union pd{
-    pde_k k_pde;
-    pde_m m_pde;
-}pd;
+// struct for page table entries 
+typedef struct __attribute__ ((packed)) pte{
+    uint32_t p : 1;
+    uint32_t rw : 1;
+    uint32_t us : 1;
+    uint32_t pt : 1;
+    uint32_t pd : 1;
+    uint32_t a : 1;
+    uint32_t d : 1;
+    uint32_t pat : 1;
+    uint32_t gp : 1;
+    uint32_t avl : 3;
+    uint32_t addr : 20;
+} pte_t;
 
 
-extern pd page_dir[1024] __attribute__((aligned (0x1000)));
-extern pte_k page_tab[1024] __attribute__((aligned (0x1000)));
-//extern pte_k u_map[1024] __attribute__((aligned(0x1000)));
+// 1024 is size specified by discussion slides 
+pde_t page_directory[1024] __attribute__((aligned (4096)));
+pte_t page_table[1024] __attribute__((aligned (4096)));
+
 
 #endif /* ASM */
 

@@ -46,7 +46,6 @@ void paging_init(){
     // page directory initialization for memory address
     page_directory[0].p = 1;
     page_directory[0].res = 1;
-    page_directory[0].ps = 0;
     page_directory[0].addrl = (uint32_t)page_table >> 12;
 
     // page directory for kernel case
