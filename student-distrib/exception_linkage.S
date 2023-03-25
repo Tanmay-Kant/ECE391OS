@@ -5,13 +5,13 @@
 #define EXCEPTION_ERROR(name,vector)   \
     .GLOBL name   ;\
     name:                               ;\
-        pushfl                          ;\  
-        pushal                          ;\  
-        pushl	$vector                 ;\  
+        pushfl                          ;\
+        pushal                          ;\
+        pushl	$vector                 ;\
         call    exception_handler       ;\
-        addl    $8, %esp                ;\  
-        popal                           ;\ 
-        popfl                           ;\     
+        addl    $8, %esp                ;\
+        popal                           ;\
+        popfl                           ;\
         iret
 
 

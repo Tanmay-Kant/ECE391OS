@@ -99,6 +99,7 @@ void idt_init(void) {
  
 
     void exception_handler(int32_t index){
+        clear();
         printf("\nException Found: %s \n", exception_name_list[index]);
         while(1){
         }

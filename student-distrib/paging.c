@@ -1,5 +1,4 @@
 #include "paging.h"
-//#include "lib.h"
 
 /* void paging_init();
 * Inputs: none
@@ -64,6 +63,7 @@ void paging_init(){
         }
         
     }
+
     loadPaging((uint32_t*)page_directory);
     
     // directory 

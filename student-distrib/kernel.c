@@ -6,7 +6,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "i8259.h"
-//#include "paging.h"
+#include "paging.h"
 #include "rtc.h"
 #include "keyboard.h"
 #include "debug.h"
@@ -141,12 +141,13 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
+    paging_init();
 
     idt_init();
     rtc_init();
     i8259_init();
     keyboard_init();
-    paging_init();
+    
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 

@@ -21,7 +21,7 @@ void rtc_init(){
 
     
     enable_irq(8); //enable IRQ with 8 for RTC IRQ num
-    printf("RTC Init");
+    //printf("RTC Init");
 }
 
 /* rtc_handler()
@@ -34,7 +34,7 @@ void rtc_init(){
 void rtc_handler(){
     cli();
     // test_interrupts(); //used to test RTC, increments video memory
-    printf("RTC running");
+    // printf("RTC running");
     outb(0x0C, 0x70); //select register C
     inb(0x71);        //throw away contents
     send_eoi(8); //send EOI with 8(RTC IRQ num)

@@ -57,6 +57,7 @@ int idt_test(){
 
 
 void divide_by_zero_exception_test(){
+	//clear();
 	TEST_HEADER;
 	int zero = 0;
 	int rand = 12;
@@ -75,7 +76,7 @@ void divide_by_zero_exception_test(){
  * Side Effects: None
  */
 void general_exception_test(){
-		asm volatile("int $0x11"); //0x11 produces machine check
+	asm volatile("int $0x11"); //0x11 produces machine check
 }
 
 void sys_call_test(){
@@ -106,18 +107,17 @@ void dereferencing_null_test(){
   	printf("%x\n", *a);
 }
 
-
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
-
 /* Test suite entry point */
 void launch_tests(){
 	//rtc_test();
 	//TEST_OUTPUT("idt_test", idt_test());
+	//divide_by_zero_exception_test();
 	//general_exception_test();
-	//dereferencing_null_test();
+	dereferencing_null_test();
 	//launch your tests here
 }
