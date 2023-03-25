@@ -12,15 +12,9 @@ void paging_init(){
 
     //pt - 1024 is size of the pages
     for (i = 0; i < 1024; i++) {
-        // sets the case for the vid memory
-        if (i == 0xB8){
-            page_table[i].p = 1;
-            page_table[i].addr = 0xB8;
-        }
-        else{
-            page_table[i].p = 0;
-            page_table[i].addr= 0;
-        }
+        // page table initialization by individual bits
+        page_table[i].p = 0;
+        page_table[i].addr= 0;
         page_table[i].pd = 0;
         page_table[i].rw = 1;
         page_table[i].us = 0;
@@ -30,9 +24,7 @@ void paging_init(){
         page_table[i].pat= 0;
         page_table[i].gp = 1;
         page_table[i].avl = 0;
-    }
-    // initalizes the page directory for all cases - 1024 size of pages
-    for (i = 0; i < 1024; i++) {
+        // page directory initialization by individual bits
         page_directory[i].rw = 1;
         page_directory[i].us = 0;
         page_directory[i].pt = 0;
@@ -40,30 +32,30 @@ void paging_init(){
         page_directory[i].a = 0;
         page_directory[i].d = 0;
         page_directory[i].gp = 0;
-        // sets page directory for the video memory segment 
-        if (i == 0){
-            page_directory[i].p = 1;
-            page_directory[i].res = 1;
-            page_directory[i].ps = 0;
-            page_directory[i].addrl = (uint32_t)page_table >> 12;
-        }
-        // sets page directory for the kernel memory segment
-        else if (i == 1){
-            page_directory[i].p = 1;
-            page_directory[i].res = 1;
-            page_directory[i].ps = 1;
-            page_directory[i].addrl = 1 << 10;
-        }
-        // initialize present and other values for all other cases
-        else{
-            page_directory[i].p = 0;
-            page_directory[i].res = 0;
-            page_directory[i].ps = 0;
-            page_directory[i].addrl = 0;
-        }
-        
+        page_directory[i].p = 0;
+        page_directory[i].res = 0;
+        page_directory[i].ps = 0;
+        page_directory[i].addrl = 0;
+                
     }
 
+    // page table for video memory address
+    page_table[0xB8].p = 1;
+    page_table[0xB8].addr = 0xB8;
+
+    // page directory initialization for memory address
+    page_directory[0].p = 1;
+    page_directory[0].res = 1;
+    page_directory[0].ps = 0;
+    page_directory[0].addrl = (uint32_t)page_table >> 12;
+
+    // page directory for kernel case
+    page_directory[1].p = 1;
+    page_directory[1].res = 1;
+    page_directory[1].ps = 1;
+    page_directory[1].addrl = 1 << 10;
+
+    // asm code call
     loadPaging((uint32_t*)page_directory);
     
     // directory 
