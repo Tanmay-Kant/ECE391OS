@@ -12,9 +12,11 @@
 #define pg_flag 0x80000000
 #define rw_present 0x3
 #define page_s 0x80
-<<<<<<< HEAD
 //#define asm
 
+
+extern void paging_init();
+extern void loadPaging();
 
 typedef struct pde {
     union {
@@ -49,6 +51,7 @@ typedef struct pde {
     };
 } pde_t;
 
+
 typedef struct __attribute__ ((packed)) pte{
     uint32_t p : 1;
     uint32_t rw : 1;
@@ -65,13 +68,9 @@ typedef struct __attribute__ ((packed)) pte{
 
 pde_t page_directory[1024] __attribute__((aligned (4096)));
 pte_t page_table[1024] __attribute__((aligned (4096)));
-=======
-//#define asm - was throughing that implicit declaration thing 
->>>>>>> origin/master
 
 
-extern void paging_init();
-extern void loadPaging();
+
 
 #endif /* _PAGING_H */
 

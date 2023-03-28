@@ -198,17 +198,15 @@ void launch_tests(){
 	//TEST_OUTPUT("idt_test", idt_test());
 	//divide_by_zero_exception_test();
 	//general_exception_test();
-<<<<<<< HEAD
+
 	//dereferencing_null_test();
 	// while(1){
 	// terminal_driver_test();
 	// }
 	// clear();
 	//open_test();
-	clear();
-	write_test();
-=======
-	dereferencing_null_test();
->>>>>>> origin/master
+	// clear();
+	// write_test();
+
 	//launch your tests here
 }

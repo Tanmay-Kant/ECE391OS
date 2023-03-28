@@ -18,9 +18,3 @@ loadPaging:
 
 	leave 
 	ret
-<<<<<<< HEAD
-
-    
-    
-=======
->>>>>>> origin/master
