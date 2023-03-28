@@ -32,3 +32,21 @@ Fix: we had been calling the function to initialize the file_system after paging
 
 Bug: read dentry by name grabbing incorrect dentry values
 Fix: we were having a lot of trouble with the pointer aspect of the file system functions and we originally tried dereferencing and accessing values such as file name and file type this led to problems with how the program interpretted it afterwards and it was instead putting the address. We instead opted to use memcpy calls which streamlined the process.
+
+Bug: There was an issue with our enter button not properly exhibiting vertical scroll. 
+Fix: The issue was that when we pressed enter along the bottom line, the cursor would simply jump up to the top but the screen wouldn’t properly vertically scroll. 
+The problem was that we were not properly setting the screen_x and screen_y values, as well as 2 conditional if statements that determined our location in the buffer. 
+
+Bug: One issue we faced with setting register values and writing to RTC device was with the outb and inb statements. 
+Fix: When we were writing our statements, we forgot that the style of code in our class is slightly different than what some other people use, and swapped the 2 inside parameters ( outb(A, B) instead of outb(B, A) ). We weren’t loading values correctly. 
+
+Bug: We faced some short issues with our flag in RTC.
+Fix: At first, we wrote while(flag = 1) instead of using the “ ==”, which completely messed up the way our flagging was set and cleared. Then, we accidentally switched the on and off values inside the while loop. 
+
+Bug: One mistake we made was forgetting which direction speed increased for the rate values. 
+Fix: We are used to increasing frequencies in Hertz meaning “faster”, but there is a negative correlation with the rate. This led to some issues and misconceptions when we were testing, but we quickly figured out our mistake and reoriented ourselves. 
+
+Bug: For RTC test cases, we were incorrectly looping through our values of frequencies/rates.
+Fix: We were not setting the right initial and increment values, but once we realized to start at i = 2 and multiply by a factor of 2 every iteration, we were able to see success. 
+
+
