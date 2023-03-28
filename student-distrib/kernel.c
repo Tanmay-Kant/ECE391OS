@@ -6,13 +6,18 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "i8259.h"
+<<<<<<< HEAD
+=======
 #include "paging.h"
 #include "rtc.h"
 #include "keyboard.h"
+>>>>>>> origin/master
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
-
+#include "paging.h"
+#include "rtc.h"
+#include "keyboard.h"
 //#include "paging.h"
 
 #define RUN_TESTS

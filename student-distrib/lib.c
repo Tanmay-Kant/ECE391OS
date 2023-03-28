@@ -7,6 +7,10 @@
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define ATTRIB      0x7
+#define LOW_PORT    0x0F
+#define VGA_INDEX   0x3D4
+#define HIGH_PORT   0x0E
+#define BACKSPACE   0x08
 
 static int screen_x;
 static int screen_y;
@@ -17,12 +21,78 @@ static char* video_mem = (char *)VIDEO;
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
+    screen_x = 0;
+    screen_y = 0;
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
 }
+
+/* https://wiki.osdev.org/Text_Mode_Cursor */
+/* void update_cursor(void);
+ * Inputs: void
+ * Return Value: none
+ * Function: updates the cursor's location every time a new character is displayed 
+ */
+void update_cursor(void)
+{
+
+    uint16_t position = screen_y * NUM_COLS + screen_x;
+    outb(LOW_PORT, VGA_INDEX);
+    outb((unsigned char)(position&0xFF), VGA_INDEX + 1);
+    outb(HIGH_PORT, VGA_INDEX);
+    outb((unsigned char )((position>>8)&0xFF), VGA_INDEX + 1);
+
+ }
+
+
+/* void reset_cursor(void);
+ * Inputs: void
+ * Return Value: none
+ * Function: resets the cursor's location to the starting position of the screen
+ */
+void reset_cursor(void)
+{
+    screen_x = 0;
+    screen_y = 0;
+    update_cursor();
+    return;
+}
+
+
+/* void scroll_up(void);
+ * Inputs: void
+ * Return Value: none
+ * Function: Scrolls the screen up one row
+ */
+void scroll_up(void)
+{
+    int32_t idx;
+    int32_t row, col;
+    uint8_t *vid_mem = (uint8_t *)video_mem;
+
+    for (row = 0; row < NUM_ROWS - 1; row++)
+    {
+        for (col = 0; col < NUM_COLS; col++)
+        {
+            idx = (row * NUM_COLS + col) * 2;
+            vid_mem[idx] = vid_mem[idx + (NUM_COLS * 2)];
+            vid_mem[idx + 1] = vid_mem[idx + (NUM_COLS * 2) + 1];
+        }
+    }
+
+    // Clear the last row
+    for (col = 0; col < NUM_COLS; col++)
+    {
+        idx = ((NUM_ROWS - 1) * NUM_COLS + col) * 2;
+        vid_mem[idx] = ' ';
+        vid_mem[idx + 1] = ATTRIB;
+    }
+}
+
+
 
 /* Standard printf().
  * Only supports the following format strings:
@@ -157,27 +227,100 @@ format_char_switch:
 int32_t puts(int8_t* s) {
     register int32_t index = 0;
     while (s[index] != '\0') {
-        putc(s[index]);
+        putc(s[index]); 
         index++;
     }
     return index;
 }
+
+
+
+/* void putc_backspace(void);
+ *   Inputs: void
+ *   Return Value: void
+ *    Function: Outputs a backspace to the console */
+void putc_backspace(void)
+{
+    struct position
+    {
+        int x;
+        int y;
+    };
+
+    struct position pos;
+
+    pos.x = screen_x;
+    pos.y = screen_y;
+
+    if (pos.x > 0) 
+    {
+        pos.x--; //simply decrement the x position if the x position is not 0
+    }
+    else if (pos.x == 0 && pos.y != 0) //if x position is zero and y position is not zero
+    {
+        pos.x = NUM_COLS - 2;
+        pos.y--; //decrement the y position and modify the x position accordingly
+    }
+
+    int offset = (NUM_COLS * pos.y + pos.x) << 1;
+    volatile uint8_t *video_ptr = (uint8_t *)(video_mem + offset);
+    *video_ptr = ' ';
+    *(video_ptr + 1) = ATTRIB;
+
+    screen_x = pos.x;
+    screen_y = pos.y;
+
+    update_cursor(); //updates the cursor position
+}
+
 
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
-    if(c == '\n' || c == '\r') {
+
+    if(c == BACKSPACE) //backspace
+    {
+        putc_backspace();
+        return;
+    }
+
+    // Check if the screen cursor is at the last column and not the last row
+    if(screen_x == NUM_COLS-1 && screen_y < NUM_ROWS-1)
+    {
+        // Move the cursor to the first column of the next row
         screen_y++;
+        screen_x = 0;
+    }
+    // Check if the screen cursor is at the last column and the last row
+    else if(screen_x == NUM_COLS-1 && screen_y == NUM_ROWS-1)
+    {
+        // Call scroll_up function to scroll the screen up one row
+        scroll_up();
+        // Move the cursor to the first column of the current row
+        screen_x = 0;
+    }
+
+    /*create an if statement to identify if ENTER character. Then check if screen Y is the last row. If so, scrollup(). reset screenx = 0 */
+    if(c == '\n' || c == '\r') { //rewrite to modify video memory to implement scrolling
+        if(screen_y + 1 == NUM_ROWS) {
+            scroll_up();
+        }else screen_y++;
+        screen_y %= NUM_ROWS;
         screen_x = 0;
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        if((screen_y + (screen_x / NUM_COLS)) == NUM_ROWS) {
+            
+            screen_y--;
+        }
+        //screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+    update_cursor();
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
