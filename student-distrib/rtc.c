@@ -2,7 +2,7 @@
 
 #define MAX_FREQ 1024
 
-char rate = 0x0F;
+char rate = 0x0F; //default rate value of 15
 int rtcFlag = 0;
 int frequency = 2;
 int counter = 0;
@@ -45,11 +45,11 @@ void rtc_handler(){
     send_eoi(8); //send EOI with 8(RTC IRQ num)
     sti();
 
-    counter++;
+    counter++; //tick value
     // printf("%d", counter);
     //printf("%d", frequency);
     // printf("above if statement handler\n");
-    if (counter % (MAX_FREQ/frequency) == 0){
+    if (counter % (MAX_FREQ/frequency) == 0){ //virtualization -- checks to see period of time to reset
         // printf("inside if statement handler\n");
         // printf("%d   %d   %d\n", counter, 1024/frequency, frequency);
         rtcFlag = 0;
@@ -61,6 +61,11 @@ void rtc_handler(){
 
 }
 
+/* open()
+* Inputs: Pointer to unsigned int uint8_t
+* Outputs: 0 upon success, -1 upon failure
+* Function: A system call specifically providing access to RTC files
+*/
 int32_t open (const uint8_t* filename) { /*const uint8_t* filename*/
     //unsigned int rate2 = calculateRate(2);
 
@@ -82,17 +87,34 @@ int32_t open (const uint8_t* filename) { /*const uint8_t* filename*/
     // char prevv = inb(0x71); //read the current value of register B
     // outb(0x8A, 0x70);
     // outb((prevv & 0xF0) | 15, 0x71);
-    frequency = 2;
+
+    /*null check*/
+    if (filename == NULL) {
+        return -1;
+    }
+
+    frequency = 2; //set frequency to instructed default of 2Hz
     return 0;
 }
 
+/* read()
+* Inputs: A 32-bit signed integer fd , a pointer to a buffer, and a 32-bit signed integer nbytes representing number of bytes
+* Outputs: Always 0 (but only after interrupt)
+* Function: A system call that reads in data from RTC device and keeps flag set until the interrupt handler clears it
+*/
 int32_t read (int32_t fd, void* buf, int32_t nbytes) { /*int32_t fd, void* buf, int32_t nbytes*/
-    rtcFlag = 1;
+    rtcFlag = 1; /*set flag to 1*/
+    /*kept in while loop until flag is cleared*/
     while (rtcFlag == 1); //{printf("stuck in read\n");};
     // printf("read went thru\n");
     return 0;
 }
 
+/* write()
+* Inputs: A 32-bit signed integer fd , a pointer to a buffer, and a 32-bit signed integer nbytes representing number of bytes
+* Outputs: Returns number of bytes written out upon success, and -1 on failure
+* Function: Writes information regarding the desired interrupt rate
+*/
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, const void* buf, int32_t nbytes*/
 
     // frequency = ((int32_t*) buf);
@@ -115,7 +137,10 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, cons
 
     // return sizeof(derivedRate);
 
-
+    /*null check*/
+    if (buf == NULL){
+        return -1;
+    }
 
     frequency = (int32_t) buf;
     int32_t derivedRate = calculateRate(frequency);
@@ -124,6 +149,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, cons
         return -1;
     }
 
+    //sourced from wiki OS Dev
     derivedRate &= 0x0F;			// rate must be above 2 and not over 15
     //disable_ints();
     cli();
@@ -138,11 +164,23 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, cons
 
 }
 
+/* close()
+* Inputs: 32-bit signed integer fd
+* Outputs: 0 when successful, -1 if failure
+* Function: Closes the file to allow for return from later "open" calls
+*/
 int32_t close (int32_t fd) {
     return 0;
 }
 
+/* calculateRate()
+* Inputs: 32-bit unsigned integer f
+* Outputs: Integer ranging from 6-15 specifying calculated equivalent rate value, or -1 if invalid range
+* Function: Calculates and returns rate given a frequency using the formula: frequency =  32768 >> (rate-1)
+*/
 int32_t calculateRate (uint32_t f) {
+
+    /*series of if-else statements determining appropriate calculated value for rate given frequency input parameter*/
     if (f == 2) {
         return 15;
     } else if (f == 4) {

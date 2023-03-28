@@ -110,17 +110,33 @@ void rtc_test(){
 // }
 
 /* Checkpoint 2 tests */
+
+/* Terminal Driver Test
+ * 
+ * Calls and checks functionalities for both terminal read and write functions
+ * Inputs: None
+ * Outputs: integer value - # of bytes successfully copied
+ * Side Effects: Terminal read and write functions are both implemented and called
+ */
 int terminal_driver_test(){
 	TEST_HEADER;
 	int nbytes;
 	unsigned char buf[128];
-	nbytes = terminal_read(0, buf, 140); 
+	nbytes = terminal_read(0, buf, 140); //140 refers to the earlier known number of bytes
 	return terminal_write(0, buf, nbytes);
 }
 
+/* RTC Open Test
+ * 
+ * Checks to see printing of 1s as a result of JUST the open() function
+ * Inputs: None
+ * Outputs: PASS if passed
+ * Side Effects: Prints series of 1s at default value 
+ */
 int open_test(){
 	open(NULL);
 	int i;
+	//magic number of 5 is because that seems like a reasonable number to test just open function
 	for (i = 0; i < 5; i++) {
 		read(NULL, NULL, NULL);
 		printf("%d", 1);
@@ -128,6 +144,13 @@ int open_test(){
 	return PASS;
 }
 
+/* RTC Write Test
+ * 
+ * Checks to see rate of 1s printed at different frequency values
+ * Inputs: None
+ * Outputs: PASS if passed
+ * Side Effects: Prints series of 1s at the range of appropriate freq values 
+ */
 int write_test(){
 	open(NULL);
 	int a, b;
@@ -136,6 +159,8 @@ int write_test(){
 		//printf(" %d: ", a);
 		write(NULL, (const void *)a, NULL);
 		//printf("got past");
+
+		/*each of these if statements has bounds of b that are reasonable compared to the number of 1s being printed*/
 
 		if (a == 2 || a == 4 || a == 8 || a == 16 || a == 32) {
 			for (b = 0; b < a * 2; b++) {
@@ -173,19 +198,17 @@ int write_test(){
 	}
 	return PASS;
 
-	// open();
-	// int32_t passOrFail =  write(133);
+	// open(NULL);
+	// int32_t passOrFail =  write(NULL, (const void *)32, NULL);
 	// if (passOrFail == -1) {
 	// 	return FAIL;
 	// }
 	// int iijk;
 	// for (iijk = 0; iijk < 5; iijk++) {
-	// 	read();
+	// 	read(NULL, NULL, NULL);
 	// 	printf("%d", 1);
 	// }
 	// return PASS;
-
-	// return -5555;
 }
 
 /* Checkpoint 3 tests */
@@ -204,9 +227,9 @@ void launch_tests(){
 	// terminal_driver_test();
 	// }
 	// clear();
-	//open_test();
-	// clear();
-	// write_test();
+	// open_test();
+	clear();
+	write_test();
 
 	//launch your tests here
 }
