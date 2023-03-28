@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "rtc.h"
+#include "file_sys.h"
 // test launcher
 void launch_tests();
 

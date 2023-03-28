@@ -21,10 +21,12 @@ static char* video_mem = (char *)VIDEO;
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
+    // sets the position of the cursors
     screen_x = 0;
     screen_y = 0;
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        // prints a blank and adjusts the line
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
@@ -38,9 +40,11 @@ void clear(void) {
  */
 void update_cursor(void)
 {
-
+    // sets a variable for the position
     uint16_t position = screen_y * NUM_COLS + screen_x;
+    // outputs position to registers for the cursore to adjust 
     outb(LOW_PORT, VGA_INDEX);
+    // 0xff is a mask to make grab all bits in position
     outb((unsigned char)(position&0xFF), VGA_INDEX + 1);
     outb(HIGH_PORT, VGA_INDEX);
     outb((unsigned char )((position>>8)&0xFF), VGA_INDEX + 1);
@@ -55,8 +59,10 @@ void update_cursor(void)
  */
 void reset_cursor(void)
 {
+    // sets values for where the cursor should go
     screen_x = 0;
     screen_y = 0;
+    // call to adjust cursor position
     update_cursor();
     return;
 }
@@ -73,11 +79,15 @@ void scroll_up(void)
     int32_t row, col;
     uint8_t *vid_mem = (uint8_t *)video_mem;
 
+    // iterates through all but last row
     for (row = 0; row < NUM_ROWS - 1; row++)
     {
+        // iterates through the col
         for (col = 0; col < NUM_COLS; col++)
         {
+            // adjust index
             idx = (row * NUM_COLS + col) * 2;
+            // adjusts video memory at that line and one below
             vid_mem[idx] = vid_mem[idx + (NUM_COLS * 2)];
             vid_mem[idx + 1] = vid_mem[idx + (NUM_COLS * 2) + 1];
         }
@@ -86,7 +96,9 @@ void scroll_up(void)
     // Clear the last row
     for (col = 0; col < NUM_COLS; col++)
     {
+        // recalculate index
         idx = ((NUM_ROWS - 1) * NUM_COLS + col) * 2;
+        // adding a blank line
         vid_mem[idx] = ' ';
         vid_mem[idx + 1] = ATTRIB;
     }
@@ -248,6 +260,7 @@ void putc_backspace(void)
     };
 
     struct position pos;
+    // adjusts the position
 
     pos.x = screen_x;
     pos.y = screen_y;
@@ -264,9 +277,11 @@ void putc_backspace(void)
 
     int offset = (NUM_COLS * pos.y + pos.x) << 1;
     volatile uint8_t *video_ptr = (uint8_t *)(video_mem + offset);
+    // adds an empty space to fill in for the backspace
     *video_ptr = ' ';
     *(video_ptr + 1) = ATTRIB;
 
+    // adjusts the position of the cursors
     screen_x = pos.x;
     screen_y = pos.y;
 

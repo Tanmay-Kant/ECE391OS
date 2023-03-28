@@ -211,6 +211,80 @@ int write_test(){
 	// return PASS;
 }
 
+
+/* test_file_System
+ * 
+ * Checks to see if the read data function works as intended
+ * Inputs: None
+ * Outputs: Prints all the data about the file and the file 
+ * 
+ */
+
+void test_file_system(){
+	clear();
+	dentry_t dentry;
+	uint8_t file_names [FILE_SYS_NAME_LEN]  = "frame0.txt";
+
+
+		int j = 0;
+		// creates buffer to pass through - 4000 arbitrary large number
+		uint8_t buf[4000];
+		clear();
+		printf("Searching for %s\n", file_names);
+		printf("Read dentry by name: %x\n", read_dentry_by_name(file_names, &dentry));
+		printf("Filename: %s\n", dentry.filename);
+		printf("Filetype: %d\n", dentry.filetype);
+		printf("Inode: %d\n", dentry.inode_num);
+		printf("\n");
+		//if (dentry.filetype == 2){
+
+			printf("Reading file\n");
+            //for(j = 0; j < 6; j++){
+			// does read data for length much larger than the file to see if it handles it incorrectly - 4000 arbitrary large number
+            read_data(dentry.inode_num, 0, buf, 4000);
+			for(j = 0; j < 4000; j++){
+        
+            	putc(buf[j]);
+
+            //}
+
+			}
+	}
+
+
+/* test_fr
+ * 
+ * Checks to see if the file_read function is working correctly
+ * Inputs: None
+ * Outputs: Prints all the data about the file and the file 
+ * 
+ */
+void test_fr(){
+	clear();
+	uint8_t fname [FILE_SYS_NAME_LEN]  = "frame0.txt";
+	// creates buffer to pass through - 4000 arbitrary large number
+	uint8_t buf[4000];
+	file_read(fname, buf, 4000);
+	printf("%s", buf);
+}
+
+/* ioctl_calls_fs()
+ * 
+ * Checks to see if the other functions of file sys aka file write, open, close and dir write, open, close work as intended
+ * Inputs: None
+ * Outputs: Prints all the data about the file and the file 
+ * 
+ */
+void ioctl_calls_fs(){
+	// function calls and prints output
+	printf( "File open: %d\n", file_open((uint8_t *)"frame0.txt"));
+	printf( "File write: %d\n", file_write((uint8_t *)"frame0.txt"));
+	printf( "File close: %d\n", file_close((uint8_t *)"frame0.txt"));
+	printf( "Dir open: %d\n", dir_open(2));
+	printf( "Dir write: %d\n", dir_write(2));
+	printf( "Dir close: %d\n", dir_close(2));
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -223,13 +297,27 @@ void launch_tests(){
 	//general_exception_test();
 
 	//dereferencing_null_test();
+
+
+	/* terminal driver tests */
 	// while(1){
 	// terminal_driver_test();
 	// }
+
+	/* rtc tests */
 	// clear();
 	// open_test();
-	clear();
-	write_test();
+	// clear();
+	// write_test();
+
+
+	/* file system tests */
+	//test_file_system();
+	//test_fr();
+	// uint8_t buf[4000];
+	// dir_read(0, buf, 0);
+	// ioctl_calls_fs();
+
 
 	//launch your tests here
 }
