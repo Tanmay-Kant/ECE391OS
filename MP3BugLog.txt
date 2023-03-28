@@ -20,3 +20,15 @@ Fix: there was an issue with our initialization of the gdt and we did not pass a
 Bug: Only our asm volatile test case was working 
 
 Fix: There was an error with how we called the exception handler in our linkage assembly file we re wrote a case for exception errors, errors and for interrupt handling this made us rework how we called the prints and implicitly fixed the problem
+
+Bug: printing multiple characters when pressing a keyboard
+Fix: the same way that shift sends a scan code when we released it, we realized that all the other button presses do it as well so we needed to have some kind of bounds to make sure that those reads weren't interpretted as button presses. We checked if the press was less than 0x58 before calling the stuff to print the function
+
+Bug: putc for printing files had strange characters after
+Fix: this issue was due to the buffer not being cleared with null bits when we initialized it, at first we had just ran a loop when we initialized the buffer that added null nodes but later when we called read_data it would corrupt the file. So we instead added an if statement and a loop that in the case we reach the end of the file it would then fill the rest of the buffer with null nodes from there.
+
+Bug: There was an issue with initialization of the file system where the values were all way higher for the addresses then they were supposed to be
+Fix: we had been calling the function to initialize the file_system after paging which alread formatted some memory this led to the file system getting mapped to the wrong spot, to fix this we did the call before hand to fix any issues with where it mapped to.
+
+Bug: read dentry by name grabbing incorrect dentry values
+Fix: we were having a lot of trouble with the pointer aspect of the file system functions and we originally tried dereferencing and accessing values such as file name and file type this led to problems with how the program interpretted it afterwards and it was instead putting the address. We instead opted to use memcpy calls which streamlined the process.
