@@ -44,11 +44,13 @@ int32_t file_sys_init( uint32_t file_sys_start ){
  */ 
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     // check if the name of the file is max 32 characters 
-    if( strlen((int8_t*)fname) > 32){
+    /* if( strlen((int8_t*)fname) > 32){
         return -1;
-    }
+    } */
+   
     int i;
     int32_t file_found = -1; 
+    if( fname == NULL || dentry == NULL){ return file_found;}
     // a flag to indicate if the file was found
     for (i = 0; i < b_b_ptr->dir_count; i++) { 
         // assuming boot_block contains the directory entry table

@@ -223,7 +223,7 @@ int write_test(){
 void test_file_system(){
 	clear();
 	dentry_t dentry;
-	uint8_t file_names [FILE_SYS_NAME_LEN]  = "frame0.txt";
+	uint8_t file_names [FILE_SYS_NAME_LEN]  = "verylargetextwithverylongname.tx\0";
 
 
 		int j = 0;
@@ -242,13 +242,14 @@ void test_file_system(){
             //for(j = 0; j < 6; j++){
 			// does read data for length much larger than the file to see if it handles it incorrectly - 4000 arbitrary large number
             read_data(dentry.inode_num, 0, buf, 4000);
-			for(j = 0; j < 4000; j++){
+			// for(j = 0; j < 4000; j++){
         
-            	putc(buf[j]);
+            // 	putc(buf[j]);
 
-            //}
+            // //}
 
-			}
+			// }
+			// printf("%s\n" , buf);
 	}
 
 
@@ -312,7 +313,7 @@ void launch_tests(){
 
 
 	/* file system tests */
-	//test_file_system();
+	test_file_system();
 	//test_fr();
 	// uint8_t buf[4000];
 	// dir_read(0, buf, 0);
