@@ -15,7 +15,7 @@ static uint32_t enter_flag = 0; //keeps track of whether enter is pressed
 * Function: copies from the keyboard handler's kb_buff to function argument buf
 * Return Value: returns num bytes successfully copied
 */
-int32_t terminal_read(int32_t fd, uint8_t *buf, int32_t nbytes){
+int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     uint32_t i;
     uint32_t bytes_read = 0;
     if(nbytes <= 0){ //check if they are 0 number of bytes
@@ -33,24 +33,24 @@ int32_t terminal_read(int32_t fd, uint8_t *buf, int32_t nbytes){
 
     if(nbytes < buffer_size){
         for(i = 0; i < nbytes; i++){
-            buf[i] = kb_buffer[i]; //copy from keyboard_handlers buffer to function argument buf
+            ((char*) buf)[i] = kb_buffer[i]; //copy from keyboard_handlers buffer to function argument buf
             kb_buffer[i] = ' '; //clears the keyboard_handler buffer after copying
-            if((buf[i]) == '\n'){ //check if the newline is written and is smaller than nbytes
+            if(((char*) buf)[i] == '\n'){ //check if the newline is written and is smaller than nbytes
                 bytes_read = i + 1;
             }
 
-            if((i == nbytes - 1) && (buf[i] != '\n')){ //if nbytes is reached and last char is not a newline
-                buf[i] = '\n'; //set char to newline
+            if((i == nbytes - 1) && ((char*) buf)[i] != '\n'){ //if nbytes is reached and last char is not a newline
+                ((char*) buf)[i] = '\n'; //set char to newline
                 bytes_read = i + 1;
             }
         }
     }
     else{
         for(i = 0; i < buffer_size; i++){ //if nbytes is >= the size of the buffer
-            buf[i] = kb_buffer[i]; //copy from keyboard_handlers buffer to function argument buf
+            ((char*) buf)[i] = kb_buffer[i]; //copy from keyboard_handlers buffer to function argument buf
             kb_buffer[i] = ' '; //clears the keyboard_handler buffer after copying
 
-            if((buf[i]) == '\n'){ //check for newline char
+            if(((char*) buf)[i] == '\n'){ //check for newline char
                 bytes_read = i + 1;
             }
         }
@@ -74,17 +74,18 @@ int32_t terminal_read(int32_t fd, uint8_t *buf, int32_t nbytes){
 * Return Value: returns num bytes successfully copied
 */
 
-int32_t terminal_write(int32_t fd, uint8_t* buf, int32_t nbytes){
+int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes){
     uint32_t i;
-
+    char curr_char;
     if((buf == NULL) || (nbytes <= 0)){ //NULL check 
        return -1;
     }
 
         
     for(i = 0; i < nbytes; i++){
-        if(buf[i] != '\0'){ //check for a null byte
-            putc(buf[i]); //prints function argument buffer to the screen
+        curr_char = ((char*) buf)[i];
+        if(curr_char != '\0'){ //check for a null byte
+            putc(curr_char); //prints function argument buffer to the screen
         }
     }
         

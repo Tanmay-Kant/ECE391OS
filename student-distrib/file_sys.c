@@ -1,8 +1,8 @@
-#include "file_sys.h"
+#include "file_sys.h" 
 
-//used to read file from same point afterwards
+// used to read file from same point afterwards
 uint32_t pos = 0;
-//uint32_t dFileNum = 0;
+// uint32_t dFileNum = 0;
 
 
 /*
@@ -92,10 +92,15 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
  * 
  */ 
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
+    
     // checks if the buffer is uninitialized
     if ( buf == NULL ){
         return -1;
     }
+    // int bytes; 
+    // for(bytes = 0; bytes < length; bytes++){
+    //     buf[bytes] = '\0';
+    // }
     // checks if inode is a valid number
     if(inode < 0){
         return -1; 
@@ -120,8 +125,10 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
         // flag that tells that you reach end of file
         file_flag = 0; 
     }
+   
+
     
-    uint32_t i, j; // iterator
+    uint32_t i; // iterator
     uint32_t currBlock; // index of which data blk
     uint32_t BLKindex;  // index in blk 
 
@@ -140,16 +147,15 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
         offset++;
     }
     // checks if the size of the buffer is greater than the out put string
-    if(temp_length != 0) {
-        for(j = i + 1; j < temp_length; j++) {
-            // clears the extra characters to fix them writing the wrong characters
-            buf[j] = '\0';
-        }
-    } 
+    // if(temp_length != 0) {
+    //     for(j = i + 1; j < temp_length; j++) {
+    //         // clears the extra characters to fix them writing the wrong characters
+    //         buf[j] = '\0';
+    //     }
+    // } 
 
     //returns case that we hit end of file
-    if (file_flag != 1){return 0;}
-    
+    //if (file_flag != 1){return 0;}
     return i; 
     
 }
@@ -162,9 +168,10 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */ 
-int32_t file_open(uint8_t * fname){
-    return 0;
-    //return(read_dentry_by_name(fname, &dentry_ptr));
+int32_t file_open(const uint8_t* fname){
+    //return 0;
+    dentry_t temp_d;
+    return(read_dentry_by_name(fname, &temp_d));
 }
 
 
@@ -176,21 +183,37 @@ int32_t file_open(uint8_t * fname){
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */ 
-int32_t file_read(uint8_t * fname, uint8_t* buf, uint32_t length){
-    if( fname == NULL || buf == NULL || length <= 0){
-        return -1;
-    }
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
+    // int32_t length = nbytes;
+    // if( fname == NULL || buf == NULL || length <= 0){
+    //     return -1;
+    // }
     
-    //read_dentry_by_name(fname, &dentry_ptr);
-    // temporary dentry for file read
-    dentry_t dentry_fr;
-    // call to see if file exists
-    int32_t dentval = 0 ;
-    dentval = read_dentry_by_name(fname, &dentry_fr);
-    if(dentval == -1){return -1;}
-    // call to read data plus adjustment to pos so next call starts at same place
-    pos += read_data(dentry_fr.inode_num, pos, buf, length);
-    return 0;
+    // //read_dentry_by_name(fname, &dentry_ptr);
+    // // temporary dentry for file read
+    // dentry_t dentry_fr;
+    // // call to see if file exists
+    // int32_t dentval = 0 ;
+    // dentval = read_dentry_by_name(fname, &dentry_fr);
+    // if(dentval == -1){return -1;}
+    // // call to read data plus adjustment to pos so next call starts at same place
+    // pos += read_data(dentry_fr.inode_num, pos, buf, length);
+    // return 0;
+    if ( buf == NULL){ 
+        return -1; 
+    }
+    pcb_t* pcb_ptr = get_cur_pcb();
+
+    uint32_t num_bytes = read_data(pcb_ptr->fd_array[fd].inode, pcb_ptr->fd_array[fd].file_pos, buf, nbytes);
+    
+    if(num_bytes == -1) {
+        return -1;
+    } 
+    else {
+        pcb_ptr->fd_array[fd].file_pos += num_bytes; 
+    }
+    return num_bytes;
+
 }
 
 /*
@@ -201,7 +224,7 @@ int32_t file_read(uint8_t * fname, uint8_t* buf, uint32_t length){
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */ 
-int32_t file_close(uint8_t * fname){ return 0; }
+int32_t file_close(int32_t fd){ return 0; }
 
 
 /*
@@ -212,7 +235,7 @@ int32_t file_close(uint8_t * fname){ return 0; }
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */ 
-int32_t file_write(uint8_t * fname){ return -1; }
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){ return -1; }
 
 /*
  * dir_open
@@ -222,7 +245,10 @@ int32_t file_write(uint8_t * fname){ return -1; }
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */
-int32_t dir_open(uint8_t dir) { return 0; }
+int32_t dir_open(const uint8_t* fname) { 
+    dentry_t temp_d;
+    return(read_dentry_by_name(fname, &temp_d));
+}
 
 /*
  * dir_write
@@ -232,7 +258,7 @@ int32_t dir_open(uint8_t dir) { return 0; }
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */
-int32_t dir_write(uint8_t dir) { return -1; }
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes) { return -1; }
 
 /*
  * dir_close
@@ -242,7 +268,7 @@ int32_t dir_write(uint8_t dir) { return -1; }
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */
-int32_t dir_close(uint8_t dir) { return 0; }
+int32_t dir_close(int32_t fd) { return 0; }
 
 
 // display file size, file name, file type; 
@@ -255,9 +281,10 @@ int32_t dir_close(uint8_t dir) { return 0; }
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */
-int32_t dir_read(uint32_t fd, uint8_t* buf, uint32_t length){
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     //int32 t fd, void* buf, int32 t nbytes
     // return 0;
+    uint32_t length = nbytes;
     length++;
     // buf[1] = "d";
     // buf[2] = "i";

@@ -12,6 +12,17 @@
 #define pg_flag 0x80000000
 #define rw_present 0x3
 #define page_s 0x80
+#define   MAX_SPACES    1024      //Number of tables/pages in dir
+#define   ALIGN_4KB		4096			 //(2^12)
+#define   VIDMEM_ADDR   0xB8000    //Video memory address in physical memory
+#define   KERNEL_ADDR   0x400000    //Kernel address in physical memory
+
+#define   PAGE_4MB      0x400000  //4 MB page size
+#define   USER_MEM      0x8000000 //Page address for user stack
+#define   USER_INDEX    32        //The directory index for this address.
+#define   VIDEO_INDEX   34        //directory used for vidmap  
+
+#define VM_VIDEO 0x8800000
 //#define asm
 
 

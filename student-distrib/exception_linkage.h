@@ -2,8 +2,10 @@
 #define _EXCEPTION_LINKAGE_H_
 
 //extern void KEYBOARD_INT();
-extern void RTC_INT();
-extern void KEY_INT();
+extern void RTC_INIT();
+extern void KEY_INIT();
+extern void syscall_handler();
+
 
 
 extern void division_error(void);
@@ -25,7 +27,5 @@ extern void floating_point_exception(void);
 extern void alignment_check(void);
 extern void machine_check(void);
 extern void simd_floating_point_exception(void);
-
-extern void system_calls(void);
 
 #endif /*_EXCEPTION_LINKAGE_H*/

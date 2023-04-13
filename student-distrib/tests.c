@@ -157,7 +157,7 @@ int write_test(){
 	for (a = 2; a < 1025; a *= 2) { //the upper bound is because we should limit user space program to 1024 Hz
 		printf("Freq is %d: \n", a);
 		//printf(" %d: ", a);
-		write(NULL, (const void *)a, NULL);
+		write(NULL, (void *)a, NULL);
 		//printf("got past");
 
 		/*each of these if statements has bounds of b that are reasonable compared to the number of 1s being printed*/
@@ -198,17 +198,17 @@ int write_test(){
 	}
 	return PASS;
 
-	// open(NULL);
-	// int32_t passOrFail =  write(NULL, (const void *)32, NULL);
-	// if (passOrFail == -1) {
-	// 	return FAIL;
-	// }
-	// int iijk;
-	// for (iijk = 0; iijk < 5; iijk++) {
-	// 	read(NULL, NULL, NULL);
-	// 	printf("%d", 1);
-	// }
-	// return PASS;
+	open(NULL);
+	int32_t passOrFail =  write(NULL, (void *)32, NULL);
+	if (passOrFail == -1) {
+		return FAIL;
+	}
+	int iijk;
+	for (iijk = 0; iijk < 5; iijk++) {
+		read(NULL, NULL, NULL);
+		printf("%d", 1);
+	}
+	return PASS;
 }
 
 
@@ -223,10 +223,10 @@ int write_test(){
 void test_file_system(){
 	clear();
 	dentry_t dentry;
-	uint8_t file_names [FILE_SYS_NAME_LEN]  = "verylargetextwithverylongname.tx\0";
+	uint8_t file_names [FILE_SYS_NAME_LEN]  = "frame1.txt";
 
 
-		int j = 0;
+		//int j = 0;
 		// creates buffer to pass through - 4000 arbitrary large number
 		uint8_t buf[4000];
 		clear();
@@ -260,31 +260,31 @@ void test_file_system(){
  * Outputs: Prints all the data about the file and the file 
  * 
  */
-void test_fr(){
-	clear();
-	uint8_t fname [FILE_SYS_NAME_LEN]  = "frame0.txt";
-	// creates buffer to pass through - 4000 arbitrary large number
-	uint8_t buf[4000];
-	file_read(fname, buf, 4000);
-	printf("%s", buf);
-}
+// void test_fr(){
+// 	clear();
+// 	uint8_t fname [FILE_SYS_NAME_LEN]  = "frame0.txt";
+// 	// creates buffer to pass through - 4000 arbitrary large number
+// 	uint8_t buf[4000];
+// 	file_read(fname, buf, 4000);
+// 	printf("%s", buf);
+// }
 
-/* ioctl_calls_fs()
- * 
- * Checks to see if the other functions of file sys aka file write, open, close and dir write, open, close work as intended
- * Inputs: None
- * Outputs: Prints all the data about the file and the file 
- * 
- */
-void ioctl_calls_fs(){
-	// function calls and prints output
-	printf( "File open: %d\n", file_open((uint8_t *)"frame0.txt"));
-	printf( "File write: %d\n", file_write((uint8_t *)"frame0.txt"));
-	printf( "File close: %d\n", file_close((uint8_t *)"frame0.txt"));
-	printf( "Dir open: %d\n", dir_open(2));
-	printf( "Dir write: %d\n", dir_write(2));
-	printf( "Dir close: %d\n", dir_close(2));
-}
+// /* ioctl_calls_fs()
+//  * 
+//  * Checks to see if the other functions of file sys aka file write, open, close and dir write, open, close work as intended
+//  * Inputs: None
+//  * Outputs: Prints all the data about the file and the file 
+//  * 
+//  */
+// void ioctl_calls_fs(){
+// 	// function calls and prints output
+// 	printf( "File open: %d\n", file_open((uint8_t *)"frame0.txt"));
+// 	printf( "File write: %d\n", file_write((uint8_t *)"frame0.txt"));
+// 	printf( "File close: %d\n", file_close((uint8_t *)"frame0.txt"));
+// 	printf( "Dir open: %d\n", dir_open(2));
+// 	printf( "Dir write: %d\n", dir_write(2));
+// 	printf( "Dir close: %d\n", dir_close(2));
+// }
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -301,9 +301,9 @@ void launch_tests(){
 
 
 	/* terminal driver tests */
-	// while(1){
-	// terminal_driver_test();
-	// }
+	while(1){
+	terminal_driver_test();
+	}
 
 	/* rtc tests */
 	// clear();
@@ -313,6 +313,7 @@ void launch_tests(){
 
 
 	/* file system tests */
+	//
 	test_file_system();
 	//test_fr();
 	// uint8_t buf[4000];

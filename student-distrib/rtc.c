@@ -13,6 +13,7 @@ int counter = 0;
 * Function: Initializes the RTC with the default 1024 Hz rate
 */
 void rtc_init(){ 
+    frequency = 2;
     outb(0x8B, 0x70); //select Register B, and disable NMI
     char prev = inb(0x71); //read the current value of register B
     outb(0x8B, 0x70); //set the index again
@@ -49,7 +50,7 @@ void rtc_handler(){
     // printf("%d", counter);
     //printf("%d", frequency);
     // printf("above if statement handler\n");
-    if (counter % (MAX_FREQ/frequency) == 0){ //virtualization -- checks to see period of time to reset
+    if (counter % (MAX_FREQ/4) == 0){ //virtualization -- checks to see period of time to reset
         // printf("inside if statement handler\n");
         // printf("%d   %d   %d\n", counter, 1024/frequency, frequency);
         rtcFlag = 0;
@@ -66,7 +67,7 @@ void rtc_handler(){
 * Outputs: 0 upon success, -1 upon failure
 * Function: A system call specifically providing access to RTC files
 */
-int32_t open (const uint8_t* filename) { /*const uint8_t* filename*/
+int32_t rtc_open (const uint8_t* filename) { /*const uint8_t* filename*/
     //unsigned int rate2 = calculateRate(2);
 
     // cli();
@@ -102,7 +103,7 @@ int32_t open (const uint8_t* filename) { /*const uint8_t* filename*/
 * Outputs: Always 0 (but only after interrupt)
 * Function: A system call that reads in data from RTC device and keeps flag set until the interrupt handler clears it
 */
-int32_t read (int32_t fd, void* buf, int32_t nbytes) { /*int32_t fd, void* buf, int32_t nbytes*/
+int32_t rtc_read (int32_t fd, void* buf, int32_t nbytes) { /*int32_t fd, void* buf, int32_t nbytes*/
     rtcFlag = 1; /*set flag to 1*/
     /*kept in while loop until flag is cleared*/
     while (rtcFlag == 1); //{printf("stuck in read\n");};
@@ -115,7 +116,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes) { /*int32_t fd, void* buf, 
 * Outputs: Returns number of bytes written out upon success, and -1 on failure
 * Function: Writes information regarding the desired interrupt rate
 */
-int32_t write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, const void* buf, int32_t nbytes*/
+int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, const void* buf, int32_t nbytes*/
 
     // frequency = ((int32_t*) buf);
     // frequency = (int32_t) buf;
@@ -169,7 +170,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, cons
 * Outputs: 0 when successful, -1 if failure
 * Function: Closes the file to allow for return from later "open" calls
 */
-int32_t close (int32_t fd) {
+int32_t rtc_close (int32_t fd) {
     return 0;
 }
 

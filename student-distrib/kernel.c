@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
+#include "systemcall.h"
 //#include "paging.h"
 
 #define RUN_TESTS
@@ -142,6 +143,7 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
+    cli();
     file_sys_init(file_sys_start);
     paging_init();
     idt_init();
@@ -161,10 +163,10 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    //launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-
+    execute((const uint8_t *)"shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

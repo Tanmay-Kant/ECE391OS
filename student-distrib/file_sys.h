@@ -1,10 +1,23 @@
 #include "types.h"
 #include "lib.h"
+#include "systemcall.h"
 
 #ifndef FILE_SYS_H
 #define FILE_SYS_H
 
+#define BOOT_BLOCK_SIZE 64  // boot block size in bytes (64B)
+#define BLOCK_SIZE 4096     // block size in bytes (4KB)
+#define MAX_NUM_FILE 8      // maximum number of open files 
+#define INIT_FILE_POS 0     
+#define FD_FREE 1
+#define FD_BUSY 0
+#define MAX_FILENAME 32
+#define FD_BEGIN 2         // 0 is stdin, 1 is stdout
 
+#define DENTRY_RESERVED_BYTES 24
+#define BOOT_RESERVED_BYTES   52
+#define BOOT_DENTRY_NUM       63
+#define INODE_DATA_BLOCK_NUM  1023  
 #define FILE_SYS_NAME_LEN 32
 
 int32_t file_sys_init(uint32_t file_sys_start);
@@ -13,16 +26,16 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
 // open read write close declarations for directory
-int32_t file_open(uint8_t * fname);
-int32_t file_write(uint8_t * fname);
-int32_t file_close(uint8_t * fname);
-int32_t file_read(uint8_t * fname, uint8_t* buf, uint32_t length);
+int32_t file_open(const uint8_t* fname);
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t file_close(int32_t fd);
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
 
 // open read write close declarations for directory
-int32_t dir_open(uint8_t dir);
-int32_t dir_write(uint8_t dir);
-int32_t dir_close(uint8_t dir);
-int32_t dir_read(uint32_t fd, uint8_t* buf, uint32_t length);
+int32_t dir_open(const uint8_t* fname);
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t dir_close(int32_t fd);
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
 
 //void test_file_system();
 

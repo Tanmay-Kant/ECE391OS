@@ -18,3 +18,9 @@ loadPaging:
 
 	leave 
 	ret
+
+.globl flush_tlb
+flush_tlb:
+	movl %cr3, %eax
+	movl %eax, %cr3
+	ret

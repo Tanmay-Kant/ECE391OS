@@ -89,6 +89,26 @@ void paging_init(){
 
 }   
 
+void paging_cp3(int pNum){
+    
+   //add 
+   int i = 32;
+    page_directory[i].rw = 1;
+    page_directory[i].us = 1;
+    page_directory[i].pt = 0;
+    page_directory[i].pd = 0;
+    page_directory[i].a = 0;
+    page_directory[i].d = 0;
+    page_directory[i].gp = 0;
+    page_directory[i].p = 1;
+    page_directory[i].res = 0;
+    page_directory[i].ps = 1;
+    page_directory[i].addrl = 800000 + (pNum+1) * 400000;
 
+    
+    // asm code call
+    loadPaging((uint32_t*)page_directory);
+
+}
 
 

@@ -47,14 +47,9 @@ void idt_init(void) {
         if(i < 32 && i != 15) //set the reserved3 bit for exceptions
         {
             //idt[i].present = 0;
-            idt[i].reserved3 = 1;
-
+            idt[i].reserved3 = 0;
             idt[i].present = 1;
         
-        }
-        if ( i == SYSCALL_VEC_NUM){
-            idt[i].dpl = 3;         //set dpl to ring3 for userspace
-
         }
         idt[i].seg_selector = KERNEL_CS; //segment selector is always KERNEL_CS
     }
@@ -62,10 +57,16 @@ void idt_init(void) {
    
     idt[RTC_VEC_NUM].present = 1;
     idt[RTC_VEC_NUM].reserved3 = 1;
-    SET_IDT_ENTRY(idt[RTC_VEC_NUM], RTC_INT);
+    SET_IDT_ENTRY(idt[RTC_VEC_NUM], RTC_INIT);
     idt[KEYBOARD_VEC_NUM].present = 1;
     idt[KEYBOARD_VEC_NUM].reserved3 = 1; //check this
-    SET_IDT_ENTRY(idt[KEYBOARD_VEC_NUM], KEY_INT);
+    SET_IDT_ENTRY(idt[KEYBOARD_VEC_NUM], KEY_INIT);
+    idt[SYSCALL_VEC_NUM].present = 1;
+    idt[SYSCALL_VEC_NUM].reserved3 = 1; 
+    idt[SYSCALL_VEC_NUM].dpl = 0x3;
+    SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], syscall_handler);
+    
+    //idt[SYSCALL_VEC_NUM].reserved3 = 1;
 
     
     SET_IDT_ENTRY(idt[0], division_error);
@@ -98,10 +99,11 @@ void idt_init(void) {
  * in the exception_linkage.S file */
  
 
-    void exception_handler(int32_t index){
-        clear();
+    void exception_handler(int32_t index, int32_t cr2){
+        //clear();
+       // printf("%x", cr2);
         printf("\nException Found: %s \n", exception_name_list[index]);
-        while(1){
-        }
+        while(1){}
+        //halt(-1);
     }
 

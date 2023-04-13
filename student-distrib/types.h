@@ -9,6 +9,11 @@
 
 #define NULL 0
 #define FILE_SYS_NAME_LEN 32
+#define   MAX_SPACES    1024      //Number of tables/pages in dir
+#define   ALIGN_4KB		4096			 //(2^12)
+
+#define MAX_FD_NUM 8
+#define MAX_FILENAME 32
 
 #ifndef ASM
 
@@ -75,6 +80,7 @@ typedef struct __attribute__ ((packed)) pte{
 // 1024 is size specified by discussion slides - 4096 2 ^ 12 and 1024 * 4
 pde_t page_directory[1024] __attribute__((aligned (4096)));
 pte_t page_table[1024] __attribute__((aligned (4096)));
+pte_t page_table_vidmap[MAX_SPACES] __attribute__((aligned (ALIGN_4KB)));
 
 
 
@@ -110,6 +116,43 @@ typedef struct __attribute__ ((packed)) data_block{
     uint8_t data[4096];
 }data_block_t;
 
+/*file operation table*/
+typedef struct {
+    int32_t (*open)(const uint8_t* fname);
+    int32_t (*close)(int32_t fd);
+    int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
+    int32_t (*write)(int32_t fd, const void* buf, int32_t nbytes);
+} fop_table_t;
+
+fop_table_t null_fop;   
+fop_table_t rtc_fop;    
+fop_table_t dir_fop;    
+fop_table_t file_fop;   
+fop_table_t stdin_fop;  
+fop_table_t stdout_fop; 
+
+/* file descriptor*/
+typedef struct {
+    fop_table_t* fop_table_ptr; // To implement in later checkpoints, when we implement wrap drivers around a unified file system call interface (like the POSIX API)
+    uint32_t inode;
+    uint32_t file_pos;
+    uint32_t flag;
+} file_descriptor_t;
+typedef struct pcb pcb_t;
+/* pcb */
+struct pcb{
+    file_descriptor_t fd_array[MAX_FD_NUM];
+    uint32_t pid;
+    uint32_t parent_pid;
+    uint32_t exec_esp;
+    uint32_t exec_ebp;
+    uint32_t tss_esp0;
+    uint32_t user_eip;
+    uint32_t user_esp;
+    pcb_t* parent_ptr;
+    uint8_t cmd_arg[MAX_FILENAME];
+};
+
 inode_t * inode_ptr;
 dentry_t * dentry_ptr;
 boot_block_t * b_b_ptr;
@@ -125,20 +168,6 @@ data_block_t * d_b_ptr;
 // - starting point for the system - defined sm where im p sure - out of struct
 // - jump table stuff - out of struct
 
-
-
 #endif /* ASM */
 
 #endif /* _TYPES_H */
-
-
-
-/*
- *    for(i = 0; i < ASCII_size; i++){
-        if(input == ascii_table[i].key){
-            output = ascii_table[i].value;
-        }
- *
- */
-
-
