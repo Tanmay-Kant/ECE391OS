@@ -144,12 +144,12 @@ struct pcb{
     file_descriptor_t fd_array[MAX_FD_NUM];
     uint32_t pid;
     uint32_t parent_pid;
-    uint32_t exec_esp;
-    uint32_t exec_ebp;
+    uint32_t par_esp;
+    uint32_t par_ebp;
     uint32_t tss_esp0;
     uint32_t user_eip;
     uint32_t user_esp;
-    pcb_t* parent_ptr;
+    //pcb_t* parent_ptr;
     uint8_t cmd_arg[MAX_FILENAME];
 };
 
