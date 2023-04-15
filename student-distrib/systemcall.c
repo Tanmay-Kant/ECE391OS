@@ -1,7 +1,7 @@
 #include "systemcall.h"
 //variables for keeping track of the pid values
 uint32_t cur_pid = -1;
-// uint32_t parent_pid = 0;
+uint32_t parent_pid = -1;
 uint32_t pid_array[PID_MAX] = {0,0,0,0,0,0};
 
 uint32_t store_ebp;
@@ -16,60 +16,61 @@ extern void flush_tlb();
  * Output      : 0
  * Function    :  */
 int32_t halt(uint8_t status){
-    pcb_t* cur_pcb = get_cur_pcb();
+    //pcb_t* cur_pcb = get_cur_pcb();
+    return 0; 
     //cur_pcb = get_pcb(cur_pcb -> pid);
-    pid_array[cur_pid] = 0;
+    // pid_array[cur_pid] = 0;
 
-    int fd;
-    for(fd = 2; fd < 8; fd++){
-        cur_pcb -> fd_array[fd].flag = 1;
-        cur_pcb -> fd_array[fd].inode = -1;
-        cur_pcb -> fd_array[fd].file_pos = -1;
-        cur_pcb -> fd_array[fd].fop_table_ptr = NULL;
-    }
+    // int fd;
+    // for(fd = 2; fd < 8; fd++){
+    //     cur_pcb -> fd_array[fd].flag = 1;
+    //     cur_pcb -> fd_array[fd].inode = -1;
+    //     cur_pcb -> fd_array[fd].file_pos = -1;
+    //     cur_pcb -> fd_array[fd].fop_table_ptr = NULL;
+    // }
 
-    //uint32_t pnum = parent_temp;
-    int k = 32;
-    page_directory[k].rw = 1;
-    page_directory[k].us = 1;
-    page_directory[k].pt = 0;
-    page_directory[k].pd = 0;
-    page_directory[k].a = 0;
-    page_directory[k].d = 0;
-    page_directory[k].gp = 0;
-    page_directory[k].p = 1;
-    page_directory[k].res = 0;
-    page_directory[k].ps = 1;
-    //uint32_t mem_index = cur_pcb->pid;            
-    uint32_t phys_addr = (cur_pcb->parent_pid * PAGE_4MB) + 0x800000;      
-    page_directory[USER_INDEX].addrl = phys_addr >> 22;
-    flush_tlb();
-     //  (mem_index * PAGE_4MB) + 0x800000;   
-    // pcb_t* parent_pcb = get_pcb(cur_pcb->parent_pid);
+    // //uint32_t pnum = parent_temp;
+    // int k = 32;
+    // page_directory[k].rw = 1;
+    // page_directory[k].us = 1;
+    // page_directory[k].pt = 0;
+    // page_directory[k].pd = 0;
+    // page_directory[k].a = 0;
+    // page_directory[k].d = 0;
+    // page_directory[k].gp = 0;
+    // page_directory[k].p = 1;
+    // page_directory[k].res = 0;
+    // page_directory[k].ps = 1;
+    // //uint32_t mem_index = cur_pcb->pid;            
+    // uint32_t phys_addr = (cur_pcb->parent_pid * PAGE_4MB) + 0x800000;      
+    // page_directory[USER_INDEX].addrl = phys_addr >> 22;
+    // flush_tlb();
+    //  //  (mem_index * PAGE_4MB) + 0x800000;   
+    // // pcb_t* parent_pcb = get_pcb(cur_pcb->parent_pid);
 
-    //cur_pcb = get_pcb(cur_pcb->parent_pid);
-    uint32_t saved_esp = cur_pcb->exec_esp;
-    uint32_t saved_ebp = cur_pcb->exec_ebp;
-    cur_pid = cur_pcb->parent_pid;
-    cur_pcb = get_pcb(cur_pid);
+    // //cur_pcb = get_pcb(cur_pcb->parent_pid);
+    // uint32_t saved_esp = cur_pcb->exec_esp;
+    // uint32_t saved_ebp = cur_pcb->exec_ebp;
+    // cur_pid = cur_pcb->parent_pid;
+    // cur_pcb = get_pcb(cur_pid);
 
-    tss.esp0 = EIGHT_MB - (EIGHT_KB*cur_pid) - sizeof(int32_t);
+    // tss.esp0 = EIGHT_MB - (EIGHT_KB*cur_pid) - sizeof(int32_t);
 
-    // tss.ss0 = KERNEL_DS;
+    // // tss.ss0 = KERNEL_DS;
 
     
-    asm volatile(
-        "movl %0,   %%ebp        ;"
-        "movl %1,   %%eax        ;"
-        "movl %2,   %%esp        ;"
-        "leave                   ;"
-        "ret                     ;"
-        :
-        : "r"(saved_ebp), "r"((uint32_t)status), "r"(saved_esp)
+    // asm volatile(
+    //     "movl %0,   %%ebp        ;"
+    //     "movl %1,   %%eax        ;"
+    //     "movl %2,   %%esp        ;"
+    //     "leave                   ;"
+    //     "ret                     ;"
+    //     :
+    //     : "r"(saved_ebp), "r"((uint32_t)status), "r"(saved_esp)
         
-    );
+    // );
 
-    return status;
+    // return status;
 }
 
 fop_table_t rtc_fop = {rtc_open, rtc_close, rtc_read, rtc_write};
@@ -101,93 +102,76 @@ fop_table_t null_fop = {null_open, null_close, null_read, null_write};
  * Output      : 
  * Function    :  */
 int32_t execute(const uint8_t* command){
-    clear();
+    //clear();
     cli();
-    int i,j;          
-    int cmd_start = 0;    
-    int arg_start = 0;
-    int blank_count =0;
+    uint32_t cmd_len = strlen((int8_t *) command);
+    if ( cmd_len == 1){return 0;}
+    if( command == NULL){return -1;}
 
-    int file_cmd_length = 0;
-    int file_arg_length = 0;
 
-    uint8_t file_cmd[MAX_FILENAME];
-    uint8_t file_arg[MAX_FILENAME];
-    
-    dentry_t temp_dentry;
-    uint8_t elf_buf[sizeof(int32_t)];
+    uint8_t parsed_cmd[10];
+    uint8_t arg[32];
+    int i;
 
-    uint32_t eip_arg;
-    uint32_t esp_arg;
-
-    for (i=0;i<MAX_FILENAME;++i){
-      file_cmd[i] = '\0';
-      file_arg[i] = '\0';
+    for (i=0;i<32;++i){
+      arg[i] = '\0';
+      if( i < 10){
+        parsed_cmd[i] = '\0';
+      }
     }
-
-    for(i = 0; i < strlen((const int8_t*)command); ++i){
+    int cmd_idx = 0; 
+    int cmd_flag = 0;
+    int spaces = 0;
+    for(i = 0; i < cmd_len; i++){
         if(command[i] != ' '){
-            file_cmd[cmd_start] = command[i];
-            ++file_cmd_length;
-            ++cmd_start;
+            parsed_cmd[cmd_idx] = command[i];
+            cmd_idx++;
+            cmd_flag = 1;
         }
         else{
-            ++blank_count;
-            if(file_cmd_length > 0)
+            spaces++;
+            if(cmd_flag == 1){
                 break;
+            }
         }
     }
-
-    //parse arg
-    for(i = cmd_start+blank_count; i< strlen((const int8_t*)command); ++i){
+    int i2; 
+    cmd_flag = 0;
+    for( i = cmd_idx + spaces; i < cmd_len; i++){
         if(command[i] != ' '){
-            for(j=i;j<strlen((const int8_t*)command);j++){
-                file_arg[arg_start] = command[j];
-                ++arg_start;                
-            }    
+            for( i2 = i; i2 < cmd_len; i2++){
+                arg[cmd_flag] = command[i2];
+                cmd_flag++;
+            }
             break;
         }
-        else{
-            if(file_arg_length > 0)
-                break;
-        }
     }
+    
+    uint8_t buf_elf[4];
+    dentry_t temp_dentry;
 
-    if(read_dentry_by_name(file_cmd, &temp_dentry)==-1){
+    if(read_dentry_by_name(parsed_cmd, &temp_dentry)==-1){
         return -1; 
     }
-
-    else if(read_data(temp_dentry.inode_num, 0, elf_buf, sizeof(int32_t)) == -1){
+    else if(read_data(temp_dentry.inode_num, 0, buf_elf, 4) == -1){
         return -1;  
     }
+    else if(!(buf_elf[0] == 0x7F && buf_elf[1] == 0x45 && buf_elf[2] == 0x4c && buf_elf[3] == 0x46)){return -1; }
 
-    else if(!(elf_buf[0] == MAGIC0 && elf_buf[1] == MAGIC1 &&
-         elf_buf[2] == MAGIC2 && elf_buf[3] == MAGIC3)) {
-        return -1; 
-    }
-
-    pcb_t* pcb_ptr;
-    //int pid_flag = 0;
-    for(i = 0; i < 6;i++){         
+    pcb_t* pcb_ptr; 
+    for(i = 0; i < 6; i++){
         if(pid_array[i] == 0){
-            // pcb_ptr->parent_ptr = get_cur_pcb();
-            pcb_ptr->parent_pid = cur_pid;
+            parent_pid = cur_pid;
+            cur_pid = i;
             pid_array[i] = 1;
-            pcb_ptr->pid = (uint32_t)i;        
-            //pid_flag = 1; 
-            break;
+            break; 
         }
     }
-
-
     if(i == 6){
             printf("pid full \n");
             return -1;
-        }
+    }
 
-    
-
-    int holder_i = i;
     int k = 32;
     page_directory[k].rw = 1;
     page_directory[k].us = 1;
@@ -198,23 +182,17 @@ int32_t execute(const uint8_t* command){
     page_directory[k].gp = 0;
     page_directory[k].p = 1;
     page_directory[k].res = 0;
-    page_directory[k].ps = 1;
-    uint32_t mem_index = pcb_ptr->pid;            
-    uint32_t phys_addr = (mem_index * PAGE_4MB) + 0x800000;      
-    page_directory[USER_INDEX].addrl = phys_addr >> 22;
+    page_directory[k].ps = 1;         
+    uint32_t phys_addr = (cur_pid * PAGE_4MB) + 0x800000;      
+    page_directory[k].addrl = phys_addr >> 22;
+
     read_data(temp_dentry.inode_num, (uint32_t)0, (uint8_t*)0x08048000,0x400000); 
     flush_tlb();
-    cur_pid = pcb_ptr->pid;
-    pcb_ptr = get_pcb(pcb_ptr->pid);          
-    
 
-    // if(cur_pid > 1 ){
-    //     pcb_ptr->parent_pid = parent_pid;
-    //     parent_pid = cur_pid;
-    // }else{
-    //     pcb_ptr->parent_pid = cur_pid;
-    // }
-    //int pi;
+    pcb_ptr = get_cur_pcb();  
+    pcb_ptr->pid = cur_pid;
+    pcb_ptr->parent_pid = parent_pid;        
+    
     for (i = 0; i < MAX_NUM_FILE; i++) {
         pcb_ptr->fd_array[i].fop_table_ptr = &null_fop;
         pcb_ptr->fd_array[i].inode = 0;
@@ -229,30 +207,30 @@ int32_t execute(const uint8_t* command){
             pcb_ptr->fd_array[i].flag = FD_BUSY;
         }
     }
-    strncpy((int8_t*)pcb_ptr->cmd_arg, (int8_t*)(file_arg), strlen((int8_t*)file_arg));
+    strncpy((int8_t*)pcb_ptr->cmd_arg, (int8_t*)(arg), strlen((int8_t*)arg));
 
     uint8_t eip_buf[ELF_SIZE];
     if(read_data(temp_dentry.inode_num, ELF_START, eip_buf, sizeof(int32_t)) == -1){
         //if(cur_pid != 0)pcb_ptr->pid = cur_pid;
-        pid_array[holder_i] = 0;
+        pid_array[cur_pid] = 0;
         return -1;
     }
 
-    eip_arg = eip_buf[0] + (eip_buf[1] << 8) + (eip_buf[2] << 16) + (eip_buf[3] << 24);
-    esp_arg = 0x8400000-4;
+    uint32_t eip_arg = eip_buf[0] + (eip_buf[1] << 8) + (eip_buf[2] << 16) + (eip_buf[3] << 24);
+    uint32_t esp_arg = 0x8400000-4;
     pcb_ptr->user_eip = eip_arg;
     pcb_ptr->user_esp = esp_arg;
 
 
-    tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - (EIGHT_KB*pcb_ptr->pid) - sizeof(int32_t);
+    tss.ss0 = 0x0018;
+    tss.esp0 = 0x800000 - (0x2000*pcb_ptr->pid) - sizeof(int32_t);
 
     pcb_ptr->tss_esp0 = tss.esp0;
 
     register uint32_t store_ebp asm("ebp");
     register uint32_t store_esp asm("esp");
-    pcb_ptr->exec_esp = store_esp;
-    pcb_ptr->exec_ebp = store_ebp;
+    pcb_ptr->par_esp = store_esp;
+    pcb_ptr->par_ebp = store_ebp;
        
     // sti();
     asm volatile(
