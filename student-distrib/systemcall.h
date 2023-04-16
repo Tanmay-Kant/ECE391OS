@@ -15,7 +15,6 @@
 #define MAGIC1    0x45
 #define MAGIC2    0x4c
 #define MAGIC3    0x46
-#define FOUR_BYTES  4
 
 #define PROGRAM_IMAGE_ADDR 0x08048000
 
@@ -26,15 +25,13 @@
 
 #define PID_MAX         8
 #define PHYS_MEM_START  1 //modified for debug
-#define ELF_SIZE        4
+
 #define ELF_START       24
 
 #define ELF0    0
 #define ELF1    1
 #define ELF2    2
 #define ELF3    3
-
-#define MAX_PID 3
 
 /* initializes file operation table */
 void fop_init();
