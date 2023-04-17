@@ -282,38 +282,48 @@ int32_t dir_close(int32_t fd) { return 0; }
  * 
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
-    //int32 t fd, void* buf, int32 t nbytes
-    // return 0;
     uint32_t length = nbytes;
     length++;
-    // buf[1] = "d";
-    // buf[2] = "i";
-    // buf[3] = "r";
-    // initializes temporary dentry to be used through out
     dentry_t dir_dent; 
-    int j;
-    
-    while( read_dentry_by_index(fd, &dir_dent) != -1){
-        // checks the length of the name and if is longer than the specified maximum then it will stop at first 32
+    while(read_dentry_by_index(fd, &dir_dent) != -1){
         length = strlen(dentry_ptr[fd].filename);
         if(length > FILE_SYS_NAME_LEN){
             length = FILE_SYS_NAME_LEN;
         }    
-        printf("Filename: ");
-        // loop to print file name character by character
-        for( j = 0; j < length; j++ ){
-            printf("%c", dentry_ptr[fd].filename[j]);
-        }
-        // prints the file type and the length of the file
-        printf(" ");
-        printf("Filetype: %d ", dentry_ptr[fd].filetype);
-        printf("File Size: %d\n", inode_ptr[dentry_ptr[fd].inode_num].length);
+        terminal_write(fd, dentry_ptr[fd].filename, length);
+        printf("\n");
         fd++;
+
+        // checks the length of the name and if is longer than the specified maximum then it will stop at first 32
     }
-    //int32_t fdout = (int32_t*)fd;
     return 0;
-    //read_dentry_by_index
 }
+        
+
+
+    //int32 t fd, void* buf, int32 t nbytes
+    // return 0;
+
+    // buf[1] = "d";
+    // buf[2] = "i";
+    // buf[3] = "r";
+    // initializes temporary dentry to be used through out
+    //int j;
+        //printf("Filename: ");
+        // loop to print file name character by character
+        // for( j = 0; j < length; j++ ){
+        //     printf("%c\n", dentry_ptr[fd].filename[j]);
+        // }
+        // prints the file type and the length of the file
+        // printf(" ");
+        // printf("Filetype: %d ", dentry_ptr[fd].filetype);
+        // printf("File Size: %d\n", inode_ptr[dentry_ptr[fd].inode_num].length);
+        
+    // }
+    //int32_t fdout = (int32_t*)fd;
+    // return 0;
+    //read_dentry_by_index
+// }
 /* 
  * im j doing these in the order they make most sense
  * init and size

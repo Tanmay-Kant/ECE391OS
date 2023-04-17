@@ -59,15 +59,13 @@ void idt_init(void) {
     idt[RTC_VEC_NUM].reserved3 = 1;
     SET_IDT_ENTRY(idt[RTC_VEC_NUM], RTC_INIT);
     idt[KEYBOARD_VEC_NUM].present = 1;
-    idt[KEYBOARD_VEC_NUM].reserved3 = 1; //check this
+    idt[KEYBOARD_VEC_NUM].reserved3 = 1; 
     SET_IDT_ENTRY(idt[KEYBOARD_VEC_NUM], KEY_INIT);
     idt[SYSCALL_VEC_NUM].present = 1;
     idt[SYSCALL_VEC_NUM].reserved3 = 1; 
     idt[SYSCALL_VEC_NUM].dpl = 0x3;
     SET_IDT_ENTRY(idt[SYSCALL_VEC_NUM], syscall_handler);
     
-    //idt[SYSCALL_VEC_NUM].reserved3 = 1;
-
     
     SET_IDT_ENTRY(idt[0], division_error);
     SET_IDT_ENTRY(idt[1], debug);
@@ -103,7 +101,7 @@ void idt_init(void) {
         //clear();
        // printf("%x", cr2);
         printf("\nException Found: %s \n", exception_name_list[index]);
-        while(1){}
-        //halt(-1);
+        //while(1){}
+        halt(255);
     }
 

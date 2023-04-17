@@ -2,7 +2,7 @@
 //variables for keeping track of the pid values
 uint32_t cur_pid = -1;
 uint32_t parent_pid = -1;
-uint32_t pid_array[PID_MAX] = {0,0,0,0,0,0};
+uint32_t pid_array[6] = {0,0,0,0,0,0};
 
 uint32_t store_ebp;
 uint32_t store_esp;
@@ -16,6 +16,11 @@ extern void flush_tlb();
  * Output      : 0
  * Function    :  */
 int32_t halt(uint8_t status){
+    if (cur_pid == 0){
+        execute((const uint8_t *)"shell");
+        return status;
+    }
+
     pcb_t* cur_pcb = get_cur_pcb(); 
     pid_array[cur_pid] = 0;
 

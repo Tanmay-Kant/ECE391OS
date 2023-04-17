@@ -12,7 +12,6 @@
 #define   MAX_SPACES    1024      //Number of tables/pages in dir
 #define   ALIGN_4KB		4096			 //(2^12)
 
-#define MAX_FD_NUM 8
 #define MAX_FILENAME 32
 
 #ifndef ASM
@@ -141,7 +140,7 @@ typedef struct {
 typedef struct pcb pcb_t;
 /* pcb */
 struct pcb{
-    file_descriptor_t fd_array[MAX_FD_NUM];
+    file_descriptor_t fd_array[8];
     uint32_t pid;
     uint32_t parent_pid;
     uint32_t par_esp;
