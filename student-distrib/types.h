@@ -149,7 +149,7 @@ struct pcb{
     uint32_t user_eip;
     uint32_t user_esp;
     //pcb_t* parent_ptr;
-    uint8_t cmd_arg[MAX_FILENAME];
+    uint8_t cmd_arg[FILE_SYS_NAME_LEN];
 };
 
 inode_t * inode_ptr;

@@ -7,12 +7,6 @@
 
 #define BOOT_BLOCK_SIZE 64  // boot block size in bytes (64B)
 #define BLOCK_SIZE 4096     // block size in bytes (4KB)
-#define MAX_NUM_FILE 8      // maximum number of open files 
-#define INIT_FILE_POS 0     
-#define FD_FREE 1
-#define FD_BUSY 0
-#define MAX_FILENAME 32
-#define FD_BEGIN 2         // 0 is stdin, 1 is stdout
 
 #define DENTRY_RESERVED_BYTES 24
 #define BOOT_RESERVED_BYTES   52

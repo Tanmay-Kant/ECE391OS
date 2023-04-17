@@ -22,8 +22,11 @@
 #define ELF_START       24
 
 void fop_init();
+
 pcb_t* get_cur_pcb();
 pcb_t* get_pcb(uint32_t pid);
+
+extern void flush_tlb();
 
 int32_t null_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t null_write(int32_t fd, const void* buf, int32_t nbytes);

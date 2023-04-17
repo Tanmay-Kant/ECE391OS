@@ -8,9 +8,6 @@ uint32_t store_ebp;
 uint32_t store_esp;
 //uint32_t cur_pcb;
 
-extern void flush_tlb();
-
-
 /* int32_t halt(uint8_t status)
  * Inputs      : status
  * Output      : 0
@@ -80,22 +77,6 @@ fop_table_t dir_fop = {dir_open, dir_close, dir_read, dir_write};
 fop_table_t null_fop = {null_open, null_close, null_read, null_write};
 
 
-    //int32_t parent_temp;
-   
-    // parent_temp = cur_pcb -> parent_pid;
-    
-    // cur_pid = parent_temp;
-
-    //cur_pcb = get_pcb(pnum);
-    //cur_pcb->parent_ptr-> fd_array[cur_pcb -> pid].flag = 0;
-    //cur_pcb->pid = cur_pcb->parent_pid;
-    //pcb_t* parent_pcb = get_pcb(cur_pcb->parent_pid);
-    //cur_pcb->pid = 0;
-    //parent_pcb = get_pcb(parent_pcb->parent_pid);
-    //cur_pcb -> parent_pid = 0;
-    //pcb_t parent_pcb = cur_pcb.fd_array[cur_pid];
-    //uint32_t s= status;
-
 /* int32_t execute(const uint8_t* command)
  * Inputs      : command - sequence of words used for commands or arguemtns
  * Output      : 
@@ -111,8 +92,8 @@ int32_t execute(const uint8_t* command){
     int file_cmd_length = 0;
     int file_arg_length = 0;
 
-    uint8_t file_cmd[MAX_FILENAME];
-    uint8_t file_arg[MAX_FILENAME];
+    uint8_t file_cmd[FILE_SYS_NAME_LEN];
+    uint8_t file_arg[FILE_SYS_NAME_LEN];
     
     dentry_t temp_dentry;
     uint8_t elf_buf[4];
@@ -120,7 +101,7 @@ int32_t execute(const uint8_t* command){
     uint32_t eip_arg;
     uint32_t esp_arg;
 
-    for (i=0;i<MAX_FILENAME;++i){
+    for (i=0;i< 32;++i){
       file_cmd[i] = '\0';
       file_arg[i] = '\0';
     }
@@ -204,26 +185,18 @@ int32_t execute(const uint8_t* command){
     pcb_ptr->parent_pid = parent_pid; 
     pcb_ptr->pid = cur_pid;          
     
-
-    // if(cur_pid > 1 ){
-    //     pcb_ptr->parent_pid = parent_pid;
-    //     parent_pid = cur_pid;
-    // }else{
-    //     pcb_ptr->parent_pid = cur_pid;
-    // }
-    //int pi;
-    for (i = 0; i < MAX_NUM_FILE; i++) {
+    for (i = 0; i < 8; i++) {
         pcb_ptr->fd_array[i].fop_table_ptr = &null_fop;
         pcb_ptr->fd_array[i].inode = 0;
-        pcb_ptr->fd_array[i].file_pos = INIT_FILE_POS;
-        pcb_ptr->fd_array[i].flag = FD_FREE;
+        pcb_ptr->fd_array[i].file_pos = 0;
+        pcb_ptr->fd_array[i].flag = 1;
         if( i == 0 ){
             pcb_ptr->fd_array[i].fop_table_ptr = &stdin_fop;  
-            pcb_ptr->fd_array[i].flag = FD_BUSY;
+            pcb_ptr->fd_array[i].flag = 0;
         }
         else if( i == 1 ){
             pcb_ptr->fd_array[i].fop_table_ptr = &stdout_fop;  
-            pcb_ptr->fd_array[i].flag = FD_BUSY;
+            pcb_ptr->fd_array[i].flag = 0;
         }
     }
     strncpy((int8_t*)pcb_ptr->cmd_arg, (int8_t*)(file_arg), strlen((int8_t*)file_arg));
@@ -269,22 +242,7 @@ int32_t execute(const uint8_t* command){
         "iret                    ;"
     );
     return 0;
-
 }
-    // for( pi = 2; pi < 6; pi++){
-    //     if (pid_array[pi] == 0){
-    //         pid_array[pi] = 1;
-    //         pcb_ptr->parent_pid = cur_pid;
-    //         cur_pid = pi;
-    //         pcb_ptr->pid = pi;
-    //         break;
-    //     }
-    // }
-   // pcb_ptr->parent_ptr = get_pcb(pcb_ptr->parent_pid);
-
-
-
-
 
 /* void fop_init()
  * Inputs      : none
@@ -335,7 +293,15 @@ pcb_t* get_pcb(uint32_t pid){
 }
 
 int32_t getargs(uint8_t* buf, int32_t nbytes){
-    return -1;
+    if(buf == NULL){
+        return -1;
+    }
+    pcb_t* cur_pcb = get_cur_pcb();
+    if(cur_pcb->cmd_arg[0] == NULL){
+        return -1;
+    }
+    strncpy((int8_t*)buf, (int8_t*)(cur_pcb->cmd_arg), nbytes);
+    return 0;
 }
 
 int32_t null_read(int32_t fd, void* buf, int32_t nbytes){
@@ -354,6 +320,8 @@ int32_t null_close(int32_t fd){
 }
 
 int32_t vidmap(uint32_t** screen_start){
+
+
     return -1;
 }
 int32_t write(int32_t fd, void* buf, int32_t nbytes){
