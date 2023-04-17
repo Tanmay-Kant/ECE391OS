@@ -113,7 +113,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     inode_t * inode_temp = (inode_t*)(&(inode_ptr[inode]));
     int temp_length = 0;
     // checks if the offset is invalid for specified inode
-    if (!(offset < inode_temp->length)){
+    if (offset > inode_temp->length){
         return -1;
     }
     uint32_t file_flag = 1; 
@@ -134,9 +134,6 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 
     // loop that iterates through the buffer and stores values to be outputted
     for( i = 0; i < length; i++){
-        //if( offset + i >= inode_temp->length){return 0;}
-        //if(( offset >= inode_temp->length)){return 0;}
-
         // figures out the data block - 4096 size of block 
         BLKindex =(uint32_t)(offset/4096);
         // grabs data block
@@ -146,17 +143,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
         buf[i] = *((uint8_t*)(d_b_ptr + currBlock) + offset%4096);
         offset++;
     }
-    // checks if the size of the buffer is greater than the out put string
-    // if(temp_length != 0) {
-    //     for(j = i + 1; j < temp_length; j++) {
-    //         // clears the extra characters to fix them writing the wrong characters
-    //         buf[j] = '\0';
-    //     }
-    // } 
-
-    //returns case that we hit end of file
-    //if (file_flag != 1){return 0;}
-    return i; 
+    return length; 
     
 }
 
