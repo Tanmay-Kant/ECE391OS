@@ -99,6 +99,11 @@ void paging_init(){
 
 }   
 
+/* void paging_vmap();
+* Inputs: none
+* Return: none
+* Description: modifies bits in a page directory entry above the 32 index
+*/
 void paging_vmap(){
 
     page_directory[33].p = 1;
@@ -115,6 +120,7 @@ void paging_vmap(){
     page_directory[33].res = 0;
     page_directory[33].addrl = (uint32_t) page_table_vidmap >> 12;
 
+    /*enables PAE, protection, and paging modes*/
     asm (
         "movl $page_directory, %%eax   ;"
         "andl $0xFFFFFC00, %%eax       ;"
