@@ -49,6 +49,14 @@ Fix: We are used to increasing frequencies in Hertz meaning “faster”, but th
 Bug: For RTC test cases, we were incorrectly looping through our values of frequencies/rates.
 Fix: We were not setting the right initial and increment values, but once we realized to start at i = 2 and multiply by a factor of 2 every iteration, we were able to see success. 
 
+Bug: Execute kept pagefaulting as soon as hit the asm volatile code. 
+Fix: Our eip and esp values had a lot of issues and was causing the first wave of page faults. This was due to us having our pids increment incorrectly which led to us being a pid ahead when calculating the eip value.
+
+Bug: Second wave of pagefaults with execute. 
+Fix: Our tss seemed to have the right value but was only working when we hard coded it to the pid - 0 case so when we ran something after it would fault as soon as it hit the asm volatile. We ended up finding out that this was due to the pids being incorrectly mapped as they got to the next one 
+
+Bug: general protection fault when hitting the asm volatile
+Fix: this was due to an issue with our idt. While we did set the dpl bit to 0 in syscall cases (0x80) we did not set the reserved three bit to 1. While other people and a ca did not we expect there was something in our handler or assembly linkage that was different that caused us to need to do this.
 
 Bug: Our RTC.c file functions were all functioning properly for earlier checkpoints. However, with cp4, it wouldn't work with void because we weren't properly dereferencing the value of the variable "frequency" in the RTC_Write function. 
 Fix: We were initially extracting the value by simply setting frequency = (int32_t) buf. We changed it to frequency = *((int32_t*)buf). The difference is that in the first method, we simply cast the buffer pointer to a 32-bit int type variable. This fails to truly read data from memory. With the second method, we cast the buffer pointer to another pointer, of 32-bit int type. Then we dereference this second new pointer to read the value at the memory location it points to. 
@@ -58,3 +66,12 @@ Fix: The final fix was that we were using incorrect page sizes. We were supposed
 
 Bug: The pingpong function had an extra line in the output
 Fix: We traced back the root issue to be in the lib.c file, with the putc function. We were checking screen_x == NUM_COLS - 1, when it should be screen_x == NUM_COLS. After making this fix of boundary condition, our pingpong function worked. 
+
+Bug: Unique faults with every syscall when calling halt
+Fix: when we ran programs and it halted it would halt but would have a different fault for each of our functions. This ended up being an issue with TSS.ESP0 somehow, initialy we thought we could just push the value to the struct in the execute function then just access the value again in halt but that caused the issue. We assumed that there was some way that the value was being manipulated likely by these syscalls since it was a unique fault. We ended up putting back the same calculation for tss.esp0 from execute into our halt function. 
+
+Bug: Fail for syserr 4 & not printing file not found for invalid arguments
+Fix: This function was a call to open and we originally implemented it without having it return -1 in cases it could not find the file or the file did not exist. This led to it always pass a real value which made it skip the if statements in the cat and syserr files. We ended up adding an extra if statement that checks if the value is -1 after an open call and in that case it returns invalid but for all other cases it return the fd instead of the output of the open call
+
+Bug: Fail for syserr 5 
+Fix: this was a testcase where it checked if close was outputting the right value. Turned out our bounds for our error checking were just incorrect so if a file was not open or if it was a file such as stdin on stdout that should be able to close it would end up saying that it could close and marking the item as free to be used later when that was incorrect
