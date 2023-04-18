@@ -50,3 +50,11 @@ Bug: For RTC test cases, we were incorrectly looping through our values of frequ
 Fix: We were not setting the right initial and increment values, but once we realized to start at i = 2 and multiply by a factor of 2 every iteration, we were able to see success. 
 
 
+Bug: Our RTC.c file functions were all functioning properly for earlier checkpoints. However, with cp4, it wouldn't work with void because we weren't properly dereferencing the value of the variable "frequency" in the RTC_Write function. 
+Fix: We were initially extracting the value by simply setting frequency = (int32_t) buf. We changed it to frequency = *((int32_t*)buf). The difference is that in the first method, we simply cast the buffer pointer to a 32-bit int type variable. This fails to truly read data from memory. With the second method, we cast the buffer pointer to another pointer, of 32-bit int type. Then we dereference this second new pointer to read the value at the memory location it points to. 
+
+Bug: Our halt function was giving us a lot of trouble, even after we had successfully written and debugged the rest of the execute and syscall functions. 
+Fix: The final fix was that we were using incorrect page sizes. We were supposed to be using 4 MB size pages, but were instead using 4 KB size pages. After making this change, our halt functioned as it was supposed to. 
+
+Bug: The pingpong function had an extra line in the output
+Fix: We traced back the root issue to be in the lib.c file, with the putc function. We were checking screen_x == NUM_COLS - 1, when it should be screen_x == NUM_COLS. After making this fix of boundary condition, our pingpong function worked. 
