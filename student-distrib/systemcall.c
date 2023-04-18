@@ -374,6 +374,7 @@ int32_t close(int32_t fd){
     //return (int32_t)tPCB->fd_array[fd].fop_table_ptr->close(fd);
 }
 
+
 int32_t open(const uint8_t* fname){
     int hold; 
     
@@ -384,28 +385,37 @@ int32_t open(const uint8_t* fname){
     //     return -1;
     // }
     dentry_t temp_dent;
-    read_dentry_by_name(fname, &temp_dent);
+    if ( read_dentry_by_name(fname, &temp_dent) == -1 ){
+        return -1; 
+    }
 
     pcb_t* tPCB = get_cur_pcb();
 
     int32_t ftype; 
     ftype = temp_dent.filetype;
+    int32_t retval = 0; 
 
     for(hold = 2; hold < 8; hold++){
-        if( tPCB->fd_array[hold].flag == 1){// check
+        if( tPCB->fd_array[hold].flag == 1){// check    
             tPCB->fd_array[hold].file_pos = 0;
-            tPCB->fd_array[hold].inode = temp_dent.inode_num;
+            tPCB->fd_array[hold].inode = temp_dent.inode_num; 
             if(ftype == 0){
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &rtc_fop;
+                retval = rtc_open(fname);
             }
             if(ftype == 1){
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &dir_fop;
+                retval = dir_open(fname);
             }
             if(ftype == 2){
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &file_fop;
+                retval = file_open(fname);
+            }
+            if(retval == -1){
+                return retval; 
             }
             return hold;
             
