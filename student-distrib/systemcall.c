@@ -321,7 +321,17 @@ int32_t null_close(int32_t fd){
 }
 
 int32_t vidmap(uint32_t** screen_start){
-    return 0;
+    //return 0;
+    if (screen_start == NULL) {
+        return -1;
+    }
+
+    if ((uint32_t) screen_start < 0x8000000 || (uint32_t) screen_start >= 0x8400000) {
+        return -1;
+    }
+    paging_vmap();
+    *screen_start = (uint32_t*)(0x8400000);
+    return 0x8400000;
 }
 int32_t write(int32_t fd, void* buf, int32_t nbytes){
     if( fd < 0 || fd > 8){

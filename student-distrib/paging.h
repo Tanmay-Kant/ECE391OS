@@ -28,6 +28,8 @@
 
 extern void paging_init();
 extern void loadPaging();
+extern void paging_vmap();
+
 
 
 #endif /* _PAGING_H */

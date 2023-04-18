@@ -64,6 +64,17 @@ void paging_init(){
 
     //vid memory 
 
+    for (i = 0; i < 1024; i++) {
+        page_table_vidmap[i].pat = 0;
+        page_table_vidmap[i].p = 0;
+        if (i == 0){
+            page_table_vidmap[i].p = 1;
+            page_table_vidmap[i].rw = 1;
+            page_table_vidmap[i].us = 1;
+            page_table_vidmap[i].addr = 0xB8;
+        }
+    }
+
     /*  
     unsigned int *dir_pointer = &page_dir;
     unsigned int *tab_pointer = &page_tab;
@@ -88,26 +99,32 @@ void paging_init(){
 
 }   
 
-void paging_cp3(int pNum){
-    
-   //add 
-   int i = 32;
-    page_directory[i].rw = 1;
-    page_directory[i].us = 1;
-    page_directory[i].pt = 0;
-    page_directory[i].pd = 0;
-    page_directory[i].a = 0;
-    page_directory[i].d = 0;
-    page_directory[i].gp = 0;
-    page_directory[i].p = 1;
-    page_directory[i].res = 0;
-    page_directory[i].ps = 1;
-    page_directory[i].addrl = 800000 + (pNum+1) * 400000;
+void paging_vmap(){
 
-    
-    // asm code call
-    loadPaging((uint32_t*)page_directory);
+    page_directory[33].p = 1;
+    page_directory[33].rw = 1;
+    page_directory[33].us = 1;
 
+    page_directory[33].pt = 0;
+    page_directory[33].pd = 0;
+    page_directory[33].a = 0;
+
+    page_directory[33].ps = 0;
+    page_directory[33].gp = 0;
+    page_directory[33].avl = 0;
+    page_directory[33].res = 0;
+    page_directory[33].addrl = (uint32_t) page_table_vidmap >> 12;
+
+    asm (
+        "movl $page_directory, %%eax   ;"
+        "andl $0xFFFFFC00, %%eax       ;"
+        "movl %%eax, %%cr3             ;"
+        "movl %%cr4, %%eax             ;"
+        "orl  $0x00000010, %%eax        ;"
+        "movl %%eax, %%cr4             ;"
+        "movl %%cr0, %%eax             ;"
+        "orl  $0x80000001, %%eax        ;"
+        "movl %%eax, %%cr0             "
+        : : : "eax", "cc" 
+    );
 }
-
-
