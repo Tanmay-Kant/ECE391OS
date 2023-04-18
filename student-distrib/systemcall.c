@@ -321,9 +321,7 @@ int32_t null_close(int32_t fd){
 }
 
 int32_t vidmap(uint32_t** screen_start){
-
-
-    return -1;
+    return 0;
 }
 int32_t write(int32_t fd, void* buf, int32_t nbytes){
     if( fd < 0 || fd > 8){
