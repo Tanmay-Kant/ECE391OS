@@ -49,6 +49,24 @@ Fix: We are used to increasing frequencies in Hertz meaning “faster”, but th
 Bug: For RTC test cases, we were incorrectly looping through our values of frequencies/rates.
 Fix: We were not setting the right initial and increment values, but once we realized to start at i = 2 and multiply by a factor of 2 every iteration, we were able to see success. 
 
+Bug: When running halt we ran into an issue where we would get to the asm volatile and it would instantly crash.
+Fix: our way of editing pid and tracking pid were messed up originally we used global variables for simplicity but as we started trying to run multiple programs or shells in shells we quickly realized it would be an issue. When we ran this also would cause seg faults.
+
+Bug: when we implemented the pid mapping we ended up switching how it was supposed to be done. This led to us pushing and popping the incorrect values for the asm code. 
+Fix: We ended up mixing up conceptually how the handler foptable and the calls interacted with eachother. We originally thought that stdin and stdout were specific processes that our system had to account for as it ran so pid would start as pid. Instead each pid has a foptable with those as the first two entries. 
+
+Bug: For rtc we tried to do virtualization when we first implemented it in cp2 
+Fix: There was an issue with how we were implementing the virtualization and ended up not having the necessary checks to make sure it wasn't dividing by an invalid value. We ended up adding minor bounds checking to fix the issue and make it so that we would at least avoid the bounds error check.
+
+Bug: when we called open we misshandled how we called it. So we ended up not actually being able to call any of the singular function calls to open that were necessary to do certain actions like init rtc. 
+Fix: we realized that this was caused by us not properly dealing with the flag to represent whether the specific section was in use. This caused other functions to map to the incorrect address and ended up causing faults. We ended up re mapping how our flags were adjusted throughout the entire section. 
+
+Bug: When we originally were running execute it would get through all the logic to parse through and get to the right file but as soon as it fit a call it had a fault. 
+Fix: we found this by specifically stepping through the shell file then we put specific print statements with every one of calls/wrappers to make sure that our linkage was actually getting into the funciton. Once we implemented the correct entry to our idt we still were getting faults this ended up be cause we did not use the right reserved3 bit and our system could not properly understand how to handle it.
+
+Bug: Memory addressing problem right after calling paging when trying to write to the video memory. 
+Fix: The original way we had implemented it we were attempting to do it with a buffer but it ended up causing issues with type casting. We realized that this was caused by the function being unable to directly access the memory address the way we had initialized it before hand. We instead had to do new type casting to make it function effectively.
+
 Bug: Execute kept pagefaulting as soon as hit the asm volatile code. 
 Fix: Our eip and esp values had a lot of issues and was causing the first wave of page faults. This was due to us having our pids increment incorrectly which led to us being a pid ahead when calculating the eip value.
 
