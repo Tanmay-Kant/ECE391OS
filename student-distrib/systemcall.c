@@ -6,6 +6,8 @@ uint32_t pid_array[6] = {0,0,0,0,0,0};
 
 uint32_t store_ebp;
 uint32_t store_esp;
+//uint32_t shell_count = 0;
+//int8_t* cur_cmd;
 //uint32_t cur_pcb;
 
 /* int32_t halt(uint8_t status)
@@ -16,6 +18,10 @@ uint32_t store_esp;
 */
 int32_t halt(uint8_t status){
     /* execute shell at base pid = 0 */
+    // if(strncmp((int8_t*)cur_cmd, (int8_t*)"shell", 5) == 0){
+    //     shell_count--;
+    // }
+    
     if (cur_pid == 0){
         pid_array[0] = 0; 
         cur_pid = -1; 
@@ -107,44 +113,64 @@ fop_table_t null_fop = {null_open, null_close, null_read, null_write};
 */
 int32_t execute(const uint8_t* command){
     //clear();
+
+    // used to limit the amount of shells that can be opened not sure if it should be 6 or something else
+    // if(strncmp((int8_t*)command, (int8_t*)"shell", 5) == 0){
+    //     if(cur_pid == -1){
+    //         shell_count = 1;
+    //     }
+    //     if (shell_count <= 3 ){
+    //         shell_count++;
+    //     }
+    //     else{
+    //         printf("limit on shells reached\n");
+    //         return 0;
+    //     }
+    // }
+
     cli();
     /*command parameter checking*/
     if ( strlen((int8_t *) command) == 1){return 0;}
     if( command == NULL){return -1;}
-
+    // initialization for every variable used through out
     uint32_t i,j;      
     int pidx = 0;    
     int arg_start = 0;
     int blanks = 0;
-
+    // initialize for cmd and argument
     uint8_t parsed_cmd[10];
     uint8_t file_arg[40];
     
-    /*populating arrays with "\0"s*/
+    /*populating arrays with NULLs to avoid invalid chars later*/
     for (i=0;i< 10;++i){
       parsed_cmd[i] = '\0';
     }
     for (i=0;i< 40;++i){
           file_arg[i] = '\0';
     }
-
+    // iterates through the command to start point
     for(i = 0; i < strlen((const int8_t*)command); i++){
         if(command[i] == ' '){
+            // if not hit an actual character it adjusts index
             blanks++; 
-            if(pidx != 0)
+            if(pidx != 0) // when it has a space after the command it stops affecting the index
                 break;
             
         }
         else{
+            // fills command into buffer and indexes it
             parsed_cmd[pidx] = command[i];
             pidx++;
         }
     }
 
-    //parse through arg
+    //parse through arg starting at command and the amount blanks
     for(i = pidx + blanks; i< strlen((const int8_t*)command); i++){
+        // checks if it is a letter
         if(command[i] != ' '){
+            // iterates through to fill the file arg 
             for(j = i;j<strlen((const int8_t*)command);j++){
+                // iterates where the argument starts
                 file_arg[arg_start] = command[j];
                 arg_start++;                
             }    
@@ -159,6 +185,7 @@ int32_t execute(const uint8_t* command){
     if(read_dentry_by_name(parsed_cmd, &temp_dentry)==-1){
         return -1; 
     }
+    // checks elf buf
     else if(read_data(temp_dentry.inode_num, 0, buf_elf, 4) == -1){
         return -1;  
     }
@@ -167,7 +194,8 @@ int32_t execute(const uint8_t* command){
 
     /*checking available processes*/
     for(i = 0; i < 6;i++){         
-        if(pid_array[i] == 0){
+        if(pid_array[i] == 0){ // checks if free
+            // adjusts pids and sets the new one along with saying that pid is busy
             parent_pid = cur_pid;
             pid_array[i] = 1;
             cur_pid = i;        
@@ -183,6 +211,7 @@ int32_t execute(const uint8_t* command){
 
     /*set up paging*/
     int holder_i = i;
+    // 32 is number specified prior in documentation - setup with MB page instead of KB page
     int k = 32;
     page_directory[k].rw = 1;
     page_directory[k].us = 1;
@@ -223,8 +252,11 @@ int32_t execute(const uint8_t* command){
             pcb_ptr->fd_array[i].flag = 0;
         }
     }
+
+    // copies the arg
     strncpy((int8_t*)pcb_ptr->cmd_arg, (int8_t*)(file_arg), strlen((int8_t*)file_arg));
 
+    // buffer used to find eip value
     uint8_t eip_buf[4];
     if(read_data(temp_dentry.inode_num, ELF_START, eip_buf, sizeof(int32_t)) == -1){
         //if(cur_pid != 0)pcb_ptr->pid = cur_pid;
@@ -232,6 +264,7 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
+    // gets esp and eip and pushes it to the pcb struct
     uint32_t eip_arg = eip_buf[0] + (eip_buf[1] << 8) + (eip_buf[2] << 16) + (eip_buf[3] << 24);
     uint32_t esp_arg = 0x8400000-4;
     pcb_ptr->user_eip = eip_arg;
@@ -240,15 +273,18 @@ int32_t execute(const uint8_t* command){
     /*setting TSS*/
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - (EIGHT_KB*pcb_ptr->pid) - 4;
-
+    // hold esp0
     pcb_ptr->tss_esp0 = tss.esp0;
 
+    // saves ebp and esp
     register uint32_t store_ebp asm("ebp");
     register uint32_t store_esp asm("esp");
+    // pushes old esp and ebp for halt 
     pcb_ptr->par_esp = store_esp;
     pcb_ptr->par_ebp = store_ebp;
        
     sti();
+    // context switching
     asm volatile(
         "pushl   %1              ;"
         "pushl   %3              ;"
@@ -275,31 +311,33 @@ int32_t execute(const uint8_t* command){
 * Side effects: None
 */
 void fop_init(){
+    // initializations used for file operator so that we can access rtc vs dir vs file vs terminal 
+    // null
     null_fop.read = null_read;
     null_fop.write = null_write;
     null_fop.open = null_open;
     null_fop.close = null_close;
-
+    // rtc
     rtc_fop.read = rtc_read;
     rtc_fop.write = rtc_write;
     rtc_fop.open = rtc_open;
     rtc_fop.close = rtc_close;
-
+    // dir
     dir_fop.read = dir_read;
     dir_fop.write = dir_write;
     dir_fop.open = dir_open;
     dir_fop.close = dir_close;
-
+    // file
     file_fop.read = file_read;
     file_fop.write = file_write;
     file_fop.open = file_open;
     file_fop.close = file_close;
-
+    // stdin
     stdin_fop.read = terminal_read;
     stdin_fop.write = null_write;
     stdin_fop.open = terminal_open;
     stdin_fop.close = terminal_close;
-
+    // stdout
     stdout_fop.read = null_read;
     stdout_fop.write = terminal_write;
     stdout_fop.open = terminal_open;
@@ -336,10 +374,13 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
     if(buf == NULL){
         return -1;
     }
+    // creates pointer to the current pcb
     pcb_t* cur_pcb = get_cur_pcb();
-
+    // checks if the command passed is greater than the size
     if(strlen((int8_t *)cur_pcb->cmd_arg) > nbytes) return -1; 
+    // checks if cmd argument is all nulled
     if(cur_pcb->cmd_arg[0] == '\0') return -1; 
+    // copys the pushed argument into the argument item in the pcb struct
     strcpy((int8_t*)buf, (int8_t*)cur_pcb->cmd_arg);
     return 0;
 }
@@ -389,12 +430,16 @@ int32_t vidmap(uint32_t** screen_start){
     if (screen_start == NULL) {
         return -1;
     }
-
+    // 0x8000000 - 128 MB
+    // 0x8400000 - 132 MB
     if ((uint32_t) screen_start < 0x8000000 || (uint32_t) screen_start >= 0x8400000) {
         return -1;
     }
+    // calls function in paging 
     paging_vmap();
+    // returns pointer to 132 MB
     *screen_start = (uint32_t*)(0x8400000);
+    // returns 132 mb
     return 0x8400000;
 }
 
@@ -407,20 +452,29 @@ int32_t vidmap(uint32_t** screen_start){
 * Side effects: None
 */
 int32_t write(int32_t fd, void* buf, int32_t nbytes){
+    // bounds check
     if( fd < 0 || fd > 8){
         return -1;
     }
+    // check if valid amount to read 
     if( nbytes <= 0 ){
         return -1;
     }
+
+    
     if( buf == NULL ){
         return -1;
     }
+
+    // creates pointer for pcb
     pcb_t* tPCB = get_cur_pcb();
 
+    // checks if the file is busy
     if(tPCB->fd_array[fd].flag == 1){
         return -1;
     }
+
+    // calls write based on the file type
     return (int32_t) tPCB->fd_array[fd].fop_table_ptr->write(fd,buf,nbytes);
 
 }
@@ -434,20 +488,26 @@ int32_t write(int32_t fd, void* buf, int32_t nbytes){
 * Side effects: None
 */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
+     // bounds check
     if( fd < 0 || fd > 8){
         return -1;
     }
+    // check if valid amount to read 
     if( nbytes <= 0 ){
         return -1;
-    }
+    }    
     if( buf == NULL ){
         return -1;
     }
+
+    // creates pointer for pcb
     pcb_t* tPCB = get_cur_pcb();
 
+    // checks if the file is busy
     if(tPCB->fd_array[fd].flag == 1){
         return -1;
     }
+
     fop_table_t ptr = *tPCB->fd_array[fd].fop_table_ptr;
     return ptr.read(fd,buf,nbytes);
     //return (int32_t)tPCB->fd_array[fd].fop_table_ptr->read(fd, buf, nbytes);
@@ -461,10 +521,14 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 */
 int32_t close(int32_t fd){
     pcb_t* tPCB = get_cur_pcb();
+
+    // checks if busy and if within bounds
     if(fd < 2 || fd > 8 || tPCB->fd_array[fd].flag == 1){
         return -1;
     }
+    // sets file to free
     tPCB->fd_array[fd].flag = 1;
+    // calls the function
     fop_table_t ptr = *tPCB->fd_array[fd].fop_table_ptr;
     return ptr.close(fd);
     //return (int32_t)tPCB->fd_array[fd].fop_table_ptr->close(fd);
@@ -477,51 +541,59 @@ int32_t close(int32_t fd){
 * Side effects: Creates FD entry
 */
 int32_t open(const uint8_t* fname){
+    // iterator
     int hold; 
-    
+    // bounds checks 
     if (fname == NULL || strlen((char*)fname) == 0){
         return -1; 
     }
     // if(file_open(fname)== -1){
     //     return -1;
     // }
+    // creates dentry block and calls to where it is
     dentry_t temp_dent;
     if ( read_dentry_by_name(fname, &temp_dent) == -1 ){
         return -1; 
     }
 
+    // pointer to cur pcb
     pcb_t* tPCB = get_cur_pcb();
 
     int32_t ftype; 
+    // gets filetype to tell if rtc, dir, or file
     ftype = temp_dent.filetype;
+    // variable for cases with irregular activity
     int32_t retval = 0; 
 
     for(hold = 2; hold < 8; hold++){
-        if( tPCB->fd_array[hold].flag == 1){// check    
+        if( tPCB->fd_array[hold].flag == 1){// check if free
+            // sets items for file descriptor table
             tPCB->fd_array[hold].file_pos = 0;
             tPCB->fd_array[hold].inode = temp_dent.inode_num; 
-            if(ftype == 0){
+            if(ftype == 0){ // rtc case
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &rtc_fop;
                 retval = rtc_open(fname);
             }
-            if(ftype == 1){
+            if(ftype == 1){ // directory case
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &dir_fop;
                 retval = dir_open(fname);
             }
-            if(ftype == 2){
+            if(ftype == 2){ // file case
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &file_fop;
                 retval = file_open(fname);
             }
-            if(retval == -1){
+            if(retval == -1){ // if invalid open then it returns that
                 return retval; 
             }
+            // returns which fd it is
             return hold;
             
         }
     }
+    // if maxed out files then invalid output
     return -1;
 
 }

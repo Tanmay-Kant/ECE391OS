@@ -68,6 +68,7 @@ void paging_init(){
         page_table_vidmap[i].pat = 0;
         page_table_vidmap[i].p = 0;
         if (i == 0){
+            // vidmap initialization
             page_table_vidmap[i].p = 1;
             page_table_vidmap[i].rw = 1;
             page_table_vidmap[i].us = 1;
@@ -105,7 +106,7 @@ void paging_init(){
 * Description: modifies bits in a page directory entry above the 32 index
 */
 void paging_vmap(){
-
+    // used 33 - just has to be some value over 32 and be kept constant through out
     page_directory[33].p = 1;
     page_directory[33].rw = 1;
     page_directory[33].us = 1;

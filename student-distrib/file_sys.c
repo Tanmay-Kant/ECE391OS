@@ -155,9 +155,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
  */ 
 int32_t file_open(const uint8_t* fname){
     dentry_t temp_d;
-    int32_t retval = read_dentry_by_name(fname, &temp_d);
-
-    return(retval);
+    return read_dentry_by_name(fname, &temp_d);
 }
 
 
@@ -185,16 +183,20 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
     // // call to read data plus adjustment to pos so next call starts at same place
     // pos += read_data(dentry_fr.inode_num, pos, buf, length);
     // return 0;
+
+    // parameter check
     if ( buf == NULL){ 
         return -1; 
     }
+    // grabs ptr for pcb
     pcb_t* pcb_ptr = get_cur_pcb();
-
+    // actual read call
     uint32_t num_bytes = read_data(pcb_ptr->fd_array[fd].inode, pcb_ptr->fd_array[fd].file_pos, buf, nbytes);
-    
+    // checks if there was an error
     if(num_bytes == -1) {
         return -1;
     } 
+    // adjusts file position based on read
     else {
         pcb_ptr->fd_array[fd].file_pos += num_bytes; 
     }
@@ -270,11 +272,16 @@ int32_t dir_close(int32_t fd) { return 0; }
 
  // just calls to index and increment file pos by 1 
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
+    // grabs ptr to pcb
     pcb_t* pcb_ptr = get_cur_pcb();
     dentry_t temp_d;
-    if(read_dentry_by_index( pcb_ptr->fd_array[fd].file_pos, &temp_d) == -1){return 0;}
+    // checks if the index exists
+    if(read_dentry_by_index( pcb_ptr->fd_array[fd].inode, &temp_d) == -1){return 0;}
+    // copy to buffer
     strncpy((int8_t *)buf, (int8_t*)&temp_d.filename, 32);
-    pcb_ptr->fd_array[fd].file_pos++;
+    // iterate to next file
+    pcb_ptr->fd_array[fd].inode++;
+    // fix for special cases where file name is too long and messed w ls
     uint32_t read_len = strlen(temp_d.filename);
     if (read_len > 32){ 
         read_len = 32; 
