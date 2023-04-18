@@ -49,19 +49,17 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     } */
    
     int i;
-    int32_t file_found = -1; 
-    if( fname == NULL || dentry == NULL){ return file_found;}
+    if( fname == NULL || dentry == NULL){ return -1;}
     // a flag to indicate if the file was found
     for (i = 0; i < b_b_ptr->dir_count; i++) { 
         // assuming boot_block contains the directory entry table
         if (strncmp((int8_t*)fname, (int8_t*)b_b_ptr->direntries[i].filename, FILE_SYS_NAME_LEN) == 0) {
             // populate dentry struct 
             memcpy(dentry, (dentry_t *)(&b_b_ptr->direntries[i]), sizeof(dentry_t));
-            file_found = 0;
-            break;
+            return 0;
         }
     }
-    return file_found;
+    return -1; 
 }
 
 /*
@@ -156,9 +154,10 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
  * 
  */ 
 int32_t file_open(const uint8_t* fname){
-    //return 0;
     dentry_t temp_d;
-    return(read_dentry_by_name(fname, &temp_d));
+    int32_t retval = read_dentry_by_name(fname, &temp_d);
+
+    return(retval);
 }
 
 
@@ -268,22 +267,20 @@ int32_t dir_close(int32_t fd) { return 0; }
  * OUTPUT: -1 if it fails, 0 if it succeeds
  * 
  */
-int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
-    uint32_t length = nbytes;
-    length++;
-    dentry_t dir_dent; 
-    while(read_dentry_by_index(fd, &dir_dent) != -1){
-        length = strlen(dentry_ptr[fd].filename);
-        if(length > FILE_SYS_NAME_LEN){
-            length = FILE_SYS_NAME_LEN;
-        }    
-        terminal_write(fd, dentry_ptr[fd].filename, length);
-        printf("\n");
-        fd++;
 
-        // checks the length of the name and if is longer than the specified maximum then it will stop at first 32
+ // just calls to index and increment file pos by 1 
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
+    pcb_t* pcb_ptr = get_cur_pcb();
+    dentry_t temp_d;
+    if(read_dentry_by_index( pcb_ptr->fd_array[fd].file_pos, &temp_d) == -1){return 0;}
+    strncpy((int8_t *)buf, (int8_t*)&temp_d.filename, 32);
+    pcb_ptr->fd_array[fd].file_pos++;
+    uint32_t read_len = strlen(temp_d.filename);
+    if (read_len > 32){ 
+        read_len = 32; 
     }
-    return 0;
+    return(read_len);
+
 }
         
 

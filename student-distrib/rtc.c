@@ -4,7 +4,7 @@
 
 char rate = 0x0F; //default rate value of 15
 int rtcFlag = 0;
-int frequency = 2;
+int32_t frequency = 2;
 int counter = 0;
 /*reference: https://wiki.osdev.org/RTC */
 /* rtc_init()
@@ -50,13 +50,14 @@ void rtc_handler(){
     // printf("%d", counter);
     //printf("%d", frequency);
     // printf("above if statement handler\n");
-    if (counter % (MAX_FREQ/4) == 0){ //virtualization -- checks to see period of time to reset
+    if (counter % (MAX_FREQ/frequency) == 0){ //virtualization -- checks to see period of time to reset
         // printf("inside if statement handler\n");
         // printf("%d   %d   %d\n", counter, 1024/frequency, frequency);
         rtcFlag = 0;
         counter = 0;
         // printf("%d   %d", rtcFlag, counter);
     }
+
     ///////sti();
     // printf("below if statement handler\n");
 
@@ -96,6 +97,7 @@ int32_t rtc_open (const uint8_t* filename) { /*const uint8_t* filename*/
 
     frequency = 2; //set frequency to instructed default of 2Hz
     return 0;
+
 }
 
 /* read()
@@ -109,6 +111,7 @@ int32_t rtc_read (int32_t fd, void* buf, int32_t nbytes) { /*int32_t fd, void* b
     while (rtcFlag == 1); //{printf("stuck in read\n");};
     // printf("read went thru\n");
     return 0;
+
 }
 
 /* write()
@@ -139,11 +142,11 @@ int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, 
     // return sizeof(derivedRate);
 
     /*null check*/
-    if (buf == NULL){
+   if (buf == NULL){
         return -1;
     }
 
-    frequency = (int32_t) buf;
+    frequency = *((int32_t*)buf);
     int32_t derivedRate = calculateRate(frequency);
 
     if ((derivedRate && (derivedRate - 1)) != 0) {
@@ -162,7 +165,6 @@ int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes){ /*(int32_t fd, 
     sti();
 
     return sizeof(derivedRate);
-
 }
 
 /* close()

@@ -14,11 +14,22 @@ uint32_t store_esp;
  * Function    :  */
 int32_t halt(uint8_t status){
     if (cur_pid == 0){
+        pid_array[0] = 0; 
+        cur_pid = -1; 
         execute((const uint8_t *)"shell");
         return status;
     }
 
     pcb_t* cur_pcb = get_cur_pcb(); 
+    uint8_t file_arg[40];
+
+    uint32_t i;
+    for (i=0;i< 40;++i){
+          file_arg[i] = '\0';
+    }
+    //putc(cur_pcb->cmd_arg);
+    strncpy((int8_t*)cur_pcb->cmd_arg, (int8_t*)(file_arg), strlen((int8_t*)cur_pcb->cmd_arg));
+    
     pid_array[cur_pid] = 0;
 
     int fd;
@@ -65,7 +76,9 @@ int32_t halt(uint8_t status){
         : "r"(saved_ebp), "r"((uint32_t)status), "r"(saved_esp)
         
     );
-
+    if( status == 255){
+        status++;
+    }
     return status;
 }
 
@@ -84,70 +97,59 @@ fop_table_t null_fop = {null_open, null_close, null_read, null_write};
 int32_t execute(const uint8_t* command){
     //clear();
     cli();
-    uint32_t i,j;          
-    int cmd_start = 0;    
+    if ( strlen((int8_t *) command) == 1){return 0;}
+    if( command == NULL){return -1;}
+
+    uint32_t i,j;      
+    int pidx = 0;    
     int arg_start = 0;
-    int blank_count =0;
+    int blanks = 0;
 
-    int file_cmd_length = 0;
-    int file_arg_length = 0;
-
-    uint8_t file_cmd[FILE_SYS_NAME_LEN];
-    uint8_t file_arg[FILE_SYS_NAME_LEN];
+    uint8_t parsed_cmd[10];
+    uint8_t file_arg[40];
     
-    dentry_t temp_dentry;
-    uint8_t elf_buf[4];
-
-    uint32_t eip_arg;
-    uint32_t esp_arg;
-
-    for (i=0;i< 32;++i){
-      file_cmd[i] = '\0';
-      file_arg[i] = '\0';
+    for (i=0;i< 10;++i){
+      parsed_cmd[i] = '\0';
+    }
+    for (i=0;i< 40;++i){
+          file_arg[i] = '\0';
     }
 
-    for(i = 0; i < strlen((const int8_t*)command); ++i){
-        if(command[i] != ' '){
-            file_cmd[cmd_start] = command[i];
-            ++file_cmd_length;
-            ++cmd_start;
+    for(i = 0; i < strlen((const int8_t*)command); i++){
+        if(command[i] == ' '){
+            blanks++; 
+            if(pidx != 0)
+                break;
+            
         }
         else{
-            ++blank_count;
-            if(file_cmd_length > 0)
-                break;
+            parsed_cmd[pidx] = command[i];
+            pidx++;
         }
     }
 
     //parse arg
-    for(i = cmd_start+blank_count; i< strlen((const int8_t*)command); ++i){
+    for(i = pidx + blanks; i< strlen((const int8_t*)command); i++){
         if(command[i] != ' '){
-            for(j=i;j<strlen((const int8_t*)command);j++){
+            for(j = i;j<strlen((const int8_t*)command);j++){
                 file_arg[arg_start] = command[j];
-                ++arg_start;                
+                arg_start++;                
             }    
             break;
         }
-        else{
-            if(file_arg_length > 0)
-                break;
-        }
     }
 
-    if(read_dentry_by_name(file_cmd, &temp_dentry)==-1){
+    uint8_t buf_elf[4];
+    dentry_t temp_dentry;
+
+    if(read_dentry_by_name(parsed_cmd, &temp_dentry)==-1){
         return -1; 
     }
-
-    else if(read_data(temp_dentry.inode_num, 0, elf_buf, sizeof(int32_t)) == -1){
+    else if(read_data(temp_dentry.inode_num, 0, buf_elf, 4) == -1){
         return -1;  
     }
+    else if(!(buf_elf[0] == 0x7F && buf_elf[1] == 0x45 && buf_elf[2] == 0x4c && buf_elf[3] == 0x46)){return -1; }
 
-    else if(!(elf_buf[0] == MAGIC0 && elf_buf[1] == MAGIC1 &&
-         elf_buf[2] == MAGIC2 && elf_buf[3] == MAGIC3)) {
-        return -1; 
-    }
-
-    //int pid_flag = 0;
     for(i = 0; i < 6;i++){         
         if(pid_array[i] == 0){
             parent_pid = cur_pid;
@@ -157,11 +159,11 @@ int32_t execute(const uint8_t* command){
         }
     }
 
-
     if(i == 6){
             printf("pid full \n");
-            return -1;
-        }
+            return 0;
+    }
+
     int holder_i = i;
     int k = 32;
     page_directory[k].rw = 1;
@@ -180,7 +182,6 @@ int32_t execute(const uint8_t* command){
 
     read_data(temp_dentry.inode_num, (uint32_t)0, (uint8_t*)0x08048000,0x400000); 
 
-    
     pcb_t* pcb_ptr = get_cur_pcb();
     pcb_ptr->parent_pid = parent_pid; 
     pcb_ptr->pid = cur_pid;          
@@ -208,8 +209,8 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
-    eip_arg = eip_buf[0] + (eip_buf[1] << 8) + (eip_buf[2] << 16) + (eip_buf[3] << 24);
-    esp_arg = 0x8400000-4;
+    uint32_t eip_arg = eip_buf[0] + (eip_buf[1] << 8) + (eip_buf[2] << 16) + (eip_buf[3] << 24);
+    uint32_t esp_arg = 0x8400000-4;
     pcb_ptr->user_eip = eip_arg;
     pcb_ptr->user_esp = esp_arg;
 
@@ -363,16 +364,16 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 }
 
 int32_t close(int32_t fd){
-    if(fd < 0 || fd > 8){
+    pcb_t* tPCB = get_cur_pcb();
+    if(fd < 2 || fd > 8 || tPCB->fd_array[fd].flag == 1){
         return -1;
     }
-
-    pcb_t* tPCB = get_cur_pcb();
     tPCB->fd_array[fd].flag = 1;
     fop_table_t ptr = *tPCB->fd_array[fd].fop_table_ptr;
     return ptr.close(fd);
     //return (int32_t)tPCB->fd_array[fd].fop_table_ptr->close(fd);
 }
+
 
 int32_t open(const uint8_t* fname){
     int hold; 
@@ -384,28 +385,37 @@ int32_t open(const uint8_t* fname){
     //     return -1;
     // }
     dentry_t temp_dent;
-    read_dentry_by_name(fname, &temp_dent);
+    if ( read_dentry_by_name(fname, &temp_dent) == -1 ){
+        return -1; 
+    }
 
     pcb_t* tPCB = get_cur_pcb();
 
     int32_t ftype; 
     ftype = temp_dent.filetype;
+    int32_t retval = 0; 
 
     for(hold = 2; hold < 8; hold++){
-        if( tPCB->fd_array[hold].flag == 1){// check
+        if( tPCB->fd_array[hold].flag == 1){// check    
             tPCB->fd_array[hold].file_pos = 0;
-            tPCB->fd_array[hold].inode = temp_dent.inode_num;
+            tPCB->fd_array[hold].inode = temp_dent.inode_num; 
             if(ftype == 0){
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &rtc_fop;
+                retval = rtc_open(fname);
             }
             if(ftype == 1){
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &dir_fop;
+                retval = dir_open(fname);
             }
             if(ftype == 2){
                 tPCB->fd_array[hold].flag = 0;
                 tPCB->fd_array[hold].fop_table_ptr = &file_fop;
+                retval = file_open(fname);
+            }
+            if(retval == -1){
+                return retval; 
             }
             return hold;
             
@@ -414,3 +424,4 @@ int32_t open(const uint8_t* fname){
     return -1;
 
 }
+
