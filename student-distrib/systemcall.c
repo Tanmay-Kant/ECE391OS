@@ -298,10 +298,10 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
         return -1;
     }
     pcb_t* cur_pcb = get_cur_pcb();
-    if(cur_pcb->cmd_arg[0] == NULL){
-        return -1;
-    }
-    strncpy((int8_t*)buf, (int8_t*)(cur_pcb->cmd_arg), nbytes);
+
+    if(strlen((int8_t *)cur_pcb->cmd_arg) > nbytes) return -1; 
+    if(cur_pcb->cmd_arg[0] == '\0') return -1; 
+    strcpy((int8_t*)buf, (int8_t*)cur_pcb->cmd_arg);
     return 0;
 }
 
