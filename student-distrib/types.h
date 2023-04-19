@@ -148,6 +148,8 @@ struct pcb{
     uint32_t tss_esp0;
     uint32_t user_eip;
     uint32_t user_esp;
+    uint32_t scheduler_esp; 
+    uint32_t scheduler_ebp; 
     //pcb_t* parent_ptr;
     uint8_t cmd_arg[FILE_SYS_NAME_LEN];
 };

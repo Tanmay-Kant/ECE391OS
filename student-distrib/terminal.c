@@ -81,7 +81,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes){
        return -1;
     }
 
-        
+    
     for(i = 0; i < nbytes; i++){
         curr_char = ((char*) buf)[i];
         if(curr_char != '\0'){ //check for a null byte
