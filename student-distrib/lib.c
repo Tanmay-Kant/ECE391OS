@@ -309,7 +309,7 @@ void putc(uint8_t c) {
         screen_x = 0;
     }
     // Check if the screen cursor is at the last column and the last row
-    else if(screen_x >= NUM_COLS-1 && c != 'n')
+    else if(screen_x >= NUM_COLS-1 && c != '\n')
     {
         // Call scroll_up function to scroll the screen up one row
         scroll_up();
