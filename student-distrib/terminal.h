@@ -20,11 +20,8 @@ void terminal_init();
 
 
 extern void keyboard_buffer(uint8_t output); //store output from keyboard into keyboard buffer
-<<<<<<< Updated upstream
-=======
 extern void terminal_switch(uint32_t t_id); 
 extern uint32_t cur_term_idx();
->>>>>>> Stashed changes
 
 
 #endif /* TERMINAL_H */

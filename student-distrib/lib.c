@@ -321,6 +321,7 @@ void putc(uint8_t c) {
         return;
     }
 
+
     // Check if the screen cursor is at the last column and not the last row
     if(screen_x == NUM_COLS-1 && screen_y < NUM_ROWS-1 && c != '\n')
     {
@@ -329,13 +330,15 @@ void putc(uint8_t c) {
         screen_x = 0;
     }
     // Check if the screen cursor is at the last column and the last row
-    else if(screen_x >= NUM_COLS-1 && c != '\n')
+    else if(screen_x == NUM_COLS-1 && c != '\n')
     {
         // Call scroll_up function to scroll the screen up one row
         scroll_up();
         // Move the cursor to the first column of the current row
         screen_x = 0;
     }
+
+
 
     /*create an if statement to identify if ENTER character. Then check if screen Y is the last row. If so, scrollup(). reset screenx = 0 */
     if(c == '\n' || c == '\r') { //rewrite to modify video memory to implement scrolling

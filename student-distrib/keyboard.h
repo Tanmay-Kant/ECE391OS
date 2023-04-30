@@ -13,6 +13,7 @@
 uint8_t caps_flag;
 uint8_t shift_flag;
 uint8_t ctrl_flag;
+uint8_t alt_flag;
 
 void keyboard_init(); //initializes the keyboard
 void keyboard_handler(); 

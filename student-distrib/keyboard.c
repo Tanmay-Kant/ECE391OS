@@ -84,6 +84,7 @@ void keyboard_init(){
     ctrl_flag  = 0;
     caps_flag  = 0;
     shift_flag = 0;
+    alt_flag = 0; 
     enable_irq(1); //enables the keyboard interrupt line on the pic
 }
 
@@ -186,12 +187,6 @@ void keyboard_handler(){
             send_eoi(1);  //end of interrupt;
             break;
 
-<<<<<<< Updated upstream
-        default:
-            break;
-    }
-    //}
-=======
         case 0x38 : //alt pressed
 
             alt_flag = 1;
@@ -211,16 +206,27 @@ void keyboard_handler(){
     }
 
     if(buttons == 0x3B && alt_flag == 1){
+        //if(cur_term == 0){return;}
         terminal_switch(0);
+        send_eoi(1);     // end of interrupt
+        sti();
+        return;
     }
     if(buttons == 0x3C && alt_flag == 1){
+        //if(cur_term == 1){return;}
         terminal_switch(1);
+        send_eoi(1);     // end of interrupt
+        sti();
+        return;
     }
     if(buttons == 0x3D && alt_flag == 1){
+        //if(cur_term == 2){return;}
         terminal_switch(2);
+        send_eoi(1);     // end of interrupt
+        sti();
+        return;
     }
 
->>>>>>> Stashed changes
     if(buttons < 0x58)     // range check 
     {
         //keyboard_handler();

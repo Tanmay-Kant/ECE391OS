@@ -42,8 +42,6 @@ void paging_init(){
     // page table for video memory address
     page_table[0xB8].p = 1;
     page_table[0xB8].addr = 0xB8;
-<<<<<<< Updated upstream
-=======
     page_table[0xB9].p = 1;
     page_table[0xB9].rw = 1;
     page_table[0xB9].us = 1;
@@ -56,7 +54,6 @@ void paging_init(){
     page_table[0xBB].rw = 1;
     page_table[0xBB].us = 1;
     page_table[0xBB].addr = 0xBB;
->>>>>>> Stashed changes
 
     // page directory initialization for memory address
     page_directory[0].p = 1;

@@ -154,8 +154,6 @@ struct pcb{
     uint8_t cmd_arg[FILE_SYS_NAME_LEN];
 };
 
-<<<<<<< Updated upstream
-=======
 typedef struct{ 
     //pcb_t* ac_pcb;
     uint32_t x_pos;
@@ -171,7 +169,6 @@ typedef struct{
 
 //uint32_t cur_term_id = 0;
 terminal_t tids[3]; 
->>>>>>> Stashed changes
 inode_t * inode_ptr;
 dentry_t * dentry_ptr;
 boot_block_t * b_b_ptr;

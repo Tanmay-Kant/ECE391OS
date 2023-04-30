@@ -1,17 +1,13 @@
 #include "terminal.h"
 
-static uint8_t kb_buffer[buffer_size]; //buffer to store chars from keyboard
-
-static uint32_t num_char = 0; //keeps track of the number of chars
+//static uint8_t kb_buffer[buffer_size]; //buffer to store chars from keyboard
+// static uint32_t num_char = 0; //keeps track of the number of chars
 static uint32_t enter_flag = 0; //keeps track of whether enter is pressed
-<<<<<<< Updated upstream
-=======
 uint32_t cur_term_id = 0; 
 
 uint32_t cur_term_idx(){
     return cur_term_id;
 }
->>>>>>> Stashed changes
 
 void terminal_init(){
     int t_id = 0;
@@ -60,8 +56,8 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
 
     if(nbytes < buffer_size){
         for(i = 0; i < nbytes; i++){
-            ((char*) buf)[i] = kb_buffer[i]; //copy from keyboard_handlers buffer to function argument buf
-            kb_buffer[i] = ' '; //clears the keyboard_handler buffer after copying
+            ((char*) buf)[i] = tids[cur_term_id].key_buf[i]; //copy from keyboard_handlers buffer to function argument buf
+            tids[cur_term_id].key_buf[i] = ' '; //clears the keyboard_handler buffer after copying
             if(((char*) buf)[i] == '\n'){ //check if the newline is written and is smaller than nbytes
                 bytes_read = i + 1;
             }
@@ -74,15 +70,15 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     }
     else{
         for(i = 0; i < buffer_size; i++){ //if nbytes is >= the size of the buffer
-            ((char*) buf)[i] = kb_buffer[i]; //copy from keyboard_handlers buffer to function argument buf
-            kb_buffer[i] = ' '; //clears the keyboard_handler buffer after copying
+            ((char*) buf)[i] = tids[cur_term_id].key_buf[i]; //copy from keyboard_handlers buffer to function argument buf
+            tids[cur_term_id].key_buf[i] = ' '; //clears the keyboard_handler buffer after copying
 
             if(((char*) buf)[i] == '\n'){ //check for newline char
                 bytes_read = i + 1;
             }
         }
     }
-    num_char = 0;   //reset the kb char buffer
+    tids[cur_term_id].kbrd_idx = 0;   //reset the kb char buffer
     enter_flag = 0; //reset the enter flag
     sti();
 
@@ -152,10 +148,10 @@ int32_t terminal_close(int32_t fd){
 void keyboard_buffer(uint8_t output){
 
     if(output == 0x08){    //check if keyboard char is backspace
-        if(num_char > 0){       //check if there is a char before backspace is pressed
-            if(num_char <= buffer_size){ //check if number of chars has not exceeded buffer size
-                kb_buffer[num_char] = output;
-                --num_char; //decrement number of chars
+        if(tids[cur_term_id].kbrd_idx > 0){       //check if there is a char before backspace is pressed
+            if(tids[cur_term_id].kbrd_idx <= buffer_size){ //check if number of chars has not exceeded buffer size
+                tids[cur_term_id].key_buf[tids[cur_term_id].kbrd_idx] = output;
+                tids[cur_term_id].kbrd_idx--; //decrement number of chars
             }
         }
     }
@@ -163,27 +159,21 @@ void keyboard_buffer(uint8_t output){
 
         enter_flag = 1;
 
-        if(num_char >= buffer_size){
-            kb_buffer[buffer_size - 1] = '\n'; //set newline if number of chars has exceeded buffer size     
+        if(tids[cur_term_id].kbrd_idx >= buffer_size){
+            tids[cur_term_id].key_buf[buffer_size - 1] = '\n'; //set newline if number of chars has exceeded buffer size     
         }
         else{
-            kb_buffer[num_char] = '\n'; //add newline to keyboard buffer
+            tids[cur_term_id].key_buf[tids[cur_term_id].kbrd_idx] = '\n'; //add newline to keyboard buffer
         }
     }
-    else if(num_char <= buffer_size){ //check if buffer size is exceeded limit
-        kb_buffer[num_char] = output; //store char into kb buffer
-        ++num_char; //increment the number of chars
+    else if(tids[cur_term_id].kbrd_idx <= buffer_size){ //check if buffer size is exceeded limit
+        tids[cur_term_id].key_buf[tids[cur_term_id].kbrd_idx] = output; //store char into kb buffer
+        tids[cur_term_id].kbrd_idx++; //increment the number of chars
     }
     else{
-        ++num_char; 
+       tids[cur_term_id].kbrd_idx++; 
     }
 }
-<<<<<<< Updated upstream
-=======
-
-
-
-
 
 void terminal_switch(uint32_t t_id){
     // bounds check and check if it is a change or not
@@ -194,6 +184,7 @@ void terminal_switch(uint32_t t_id){
         return; 
     }
     if (t_id == cur_term_id){
+        putc_backspace();
         return;
     }    
     uint32_t old_t = cur_term_id;
@@ -218,4 +209,3 @@ void terminal_switch(uint32_t t_id){
 
 }
 
->>>>>>> Stashed changes
