@@ -104,14 +104,22 @@ void scroll_up(void)
         vid_mem[idx + 1] = ATTRIB;
     }
 }
-
+/* void lib_saves();
+ * Inputs: None
+ * Return Value: none
+ * Function: Saves screen index
+ */
 void lib_saves(){
     uint32_t ct_idx = cur_term_idx();
     tids[ct_idx].x_pos = screen_x;
     tids[ct_idx].y_pos = screen_y;
     return;
 }
-
+/* void lib_restores();
+ * Inputs: None
+ * Return Value: None
+ * Function: Restores screen index to previous saved position
+ */
 void lib_restores(){
     uint32_t ct_idx = cur_term_idx();
     screen_x = tids[ct_idx].x_pos;
