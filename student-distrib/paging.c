@@ -42,14 +42,18 @@ void paging_init(){
     // page table for video memory address
     page_table[0xB8].p = 1;
     page_table[0xB8].addr = 0xB8;
+
+    // initialization of vidmem for terminal 10
     page_table[0xB9].p = 1;
     page_table[0xB9].rw = 1;
     page_table[0xB9].us = 1;
     page_table[0xB9].addr = 0xB9;
+    // initialization of vidmem for terminal 1
     page_table[0xBA].p = 1;
     page_table[0xBA].us = 1;
     page_table[0xBA].rw = 1;
     page_table[0xBA].addr = 0xBA;
+    // initialization of vidmem for terminal 2
     page_table[0xBB].p = 1;
     page_table[0xBB].rw = 1;
     page_table[0xBB].us = 1;

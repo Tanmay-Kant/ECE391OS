@@ -5,20 +5,36 @@
 static uint32_t enter_flag = 0; //keeps track of whether enter is pressed
 uint32_t cur_term_id = 0; 
 
+
+/* cur_term_idx
+* Inputs: none
+* Outputs: none
+* Function: global call that tells what terminal is currently being outputted
+*/
 uint32_t cur_term_idx(){
     return cur_term_id;
 }
 
+/* terminal_init
+* Inputs: none
+* Outputs: none
+* Function: initializes all the bits of the terminal for saved data during initialization.
+*/
 void terminal_init(){
     int t_id = 0;
     clear();
     reset_cursor();
     for(t_id = 0; t_id < 3; t_id++){
+        // sets the positions to 0
         tids[t_id].x_pos = 0; 
         tids[t_id].y_pos = 0; 
+        // says if it is the terminal that is being displayed
         tids[t_id].active_flag = 0; 
+        // maps the memory address to the terminal
         tids[t_id].vidmem = 0xB8 + 1 + t_id; 
+        // sets the index for where in buffer the current character is
         tids[t_id].kbrd_idx = 0;
+        // checks if a shell is ran in the specific terminal later
         tids[t_id].shell = 0;
         terminal_switch(t_id);
         //execute((const uint8_t *)"shell");
@@ -175,35 +191,51 @@ void keyboard_buffer(uint8_t output){
     }
 }
 
+
+/* terminal_switch
+* Inputs: terminal
+* Outputs: none
+* Function: Switches which terminal is being outputted and saves all necessary data
+*/
 void terminal_switch(uint32_t t_id){
     // bounds check and check if it is a change or not
     // store old data into the terminal struct
     // restore with new idx 
     // printf("terminal switching %x", t_id);
+    // bounds check 
     if( t_id == cur_term_id || t_id > 2 || t_id < 0){
         return; 
     }
     if (t_id == cur_term_id){
+        // used to radjust for the case when it added an extra space when switching terminals 
         putc_backspace();
         return;
     }    
     uint32_t old_t = cur_term_id;
+    // saves data for the specific terminal
     lib_saves();
     tids[cur_term_id].active_flag = 0;
-
+    // adjusts the terminal that is being outputted
     cur_term_id = t_id;
 
+    // sets the page table at vidmem page to the original values
     page_table[0xB8].us = 1;
     page_table[0xB8].rw = 1; 
     page_table[0xB8].p = 1;
     page_table[0xB8].addr = 0xB8;
     flush_tlb();
 
+    // saves the memory of the current video memory 
+    //into a buffer for the specific terminal which is going to stop being displated
     memcpy((void*) ((0xB9 + old_t) * 0x1000), (const void*) (0xB8 * 0x1000), 0x1000);
+    // sends data from the buffer address for the specific terminal to the video memory page
     memcpy((void*) (0xB8 * 0x1000), (const void*) ((0xB9 + cur_term_id)* 0x1000), 0x1000);
-        
+
+
+    // sets the cursor and other data back to the saved data    
     lib_restores();
 
+    // sets that the specific terminal is being outputted to
     tids[t_id].active_flag = 1;
 
 
