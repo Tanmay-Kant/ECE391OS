@@ -2,7 +2,7 @@
 
 static uint8_t kb_buffer[buffer_size]; //buffer to store chars from keyboard
 
-static uint32_t num_char = 0; //keeps track of the number of chars
+uint32_t num_char = 0; //keeps track of the number of chars
 static uint32_t enter_flag = 0; //keeps track of whether enter is pressed
 
 

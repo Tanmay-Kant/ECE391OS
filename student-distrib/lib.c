@@ -2,11 +2,12 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x7
+#define ATTRIB      0x6
 #define LOW_PORT    0x0F
 #define VGA_INDEX   0x3D4
 #define HIGH_PORT   0x0E
@@ -253,6 +254,9 @@ int32_t puts(int8_t* s) {
  *    Function: Outputs a backspace to the console */
 void putc_backspace(void)
 {
+    if(num_char <= 0){
+        return;
+    }
     struct position
     {
         int x;
