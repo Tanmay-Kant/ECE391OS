@@ -105,6 +105,7 @@ EXCEPTION_HANDLE(machine_check, 18);
 EXCEPTION_HANDLE(simd_floating_point_exception, 19);
 INTERRUPTS(RTC_INIT, rtc_handler);
 INTERRUPTS(KEY_INIT, keyboard_handler);   
+INTERRUPTS(PIT_INIT, scheduler)
 
 
 

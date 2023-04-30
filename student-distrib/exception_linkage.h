@@ -5,6 +5,7 @@
 extern void RTC_INIT();
 extern void KEY_INIT();
 extern void syscall_handler();
+extern void PIT_INIT();
 
 
 

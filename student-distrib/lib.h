@@ -6,6 +6,7 @@
 #define _LIB_H
 
 #include "types.h"
+#include "terminal.h"
 
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
@@ -17,6 +18,8 @@ void clear(void);
 void test_interrupts(void);
 void reset_cursor(void);
 void update_cursor(void);
+void lib_saves(void);
+void lib_restores(void);
 
 
 void* memset(void* s, int32_t c, uint32_t n);

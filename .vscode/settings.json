@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "terminal.h": "c",
+        "types.h": "c"
+    }
+}

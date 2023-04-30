@@ -186,10 +186,41 @@ void keyboard_handler(){
             send_eoi(1);  //end of interrupt;
             break;
 
+<<<<<<< Updated upstream
         default:
             break;
     }
     //}
+=======
+        case 0x38 : //alt pressed
+
+            alt_flag = 1;
+            //printf("got");
+            send_eoi(1);
+            return;
+
+        case 0xB8 : //alt released
+
+            alt_flag = 0;
+            //printf("gone");
+            send_eoi(1);
+            return;
+
+        default:
+            break;
+    }
+
+    if(buttons == 0x3B && alt_flag == 1){
+        terminal_switch(0);
+    }
+    if(buttons == 0x3C && alt_flag == 1){
+        terminal_switch(1);
+    }
+    if(buttons == 0x3D && alt_flag == 1){
+        terminal_switch(2);
+    }
+
+>>>>>>> Stashed changes
     if(buttons < 0x58)     // range check 
     {
         //keyboard_handler();

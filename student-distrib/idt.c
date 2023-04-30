@@ -61,6 +61,10 @@ void idt_init(void) {
     idt[KEYBOARD_VEC_NUM].present = 1;
     idt[KEYBOARD_VEC_NUM].reserved3 = 1; 
     SET_IDT_ENTRY(idt[KEYBOARD_VEC_NUM], KEY_INIT);
+    //32 - pit vec num
+    idt[32].present = 1;
+    idt[32].reserved3 = 1; 
+    SET_IDT_ENTRY(idt[32], PIT_INIT);
     idt[SYSCALL_VEC_NUM].present = 1;
     idt[SYSCALL_VEC_NUM].reserved3 = 1; 
     idt[SYSCALL_VEC_NUM].dpl = 0x3;

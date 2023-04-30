@@ -22,7 +22,7 @@ int32_t halt(uint8_t status){
     //     shell_count--;
     // }
     
-    if (cur_pid == 0){
+    if (cur_pid < 3){
         pid_array[0] = 0; 
         cur_pid = -1; 
         execute((const uint8_t *)"shell");

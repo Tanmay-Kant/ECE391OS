@@ -4,7 +4,34 @@ static uint8_t kb_buffer[buffer_size]; //buffer to store chars from keyboard
 
 static uint32_t num_char = 0; //keeps track of the number of chars
 static uint32_t enter_flag = 0; //keeps track of whether enter is pressed
+<<<<<<< Updated upstream
+=======
+uint32_t cur_term_id = 0; 
 
+uint32_t cur_term_idx(){
+    return cur_term_id;
+}
+>>>>>>> Stashed changes
+
+void terminal_init(){
+    int t_id = 0;
+    clear();
+    reset_cursor();
+    for(t_id = 0; t_id < 3; t_id++){
+        tids[t_id].x_pos = 0; 
+        tids[t_id].y_pos = 0; 
+        tids[t_id].active_flag = 0; 
+        tids[t_id].vidmem = 0xB8 + 1 + t_id; 
+        tids[t_id].kbrd_idx = 0;
+        tids[t_id].shell = 0;
+        terminal_switch(t_id);
+        //execute((const uint8_t *)"shell");
+    }
+    terminal_switch(0);
+    //execute((const uint8_t *)"shell");
+    return;
+
+}
 
 
 /* terminal_read(int32_t fd, uint8_t *buf, int32_t nbytes)
@@ -151,3 +178,44 @@ void keyboard_buffer(uint8_t output){
         ++num_char; 
     }
 }
+<<<<<<< Updated upstream
+=======
+
+
+
+
+
+void terminal_switch(uint32_t t_id){
+    // bounds check and check if it is a change or not
+    // store old data into the terminal struct
+    // restore with new idx 
+    // printf("terminal switching %x", t_id);
+    if( t_id == cur_term_id || t_id > 2 || t_id < 0){
+        return; 
+    }
+    if (t_id == cur_term_id){
+        return;
+    }    
+    uint32_t old_t = cur_term_id;
+    lib_saves();
+    tids[cur_term_id].active_flag = 0;
+
+    cur_term_id = t_id;
+
+    page_table[0xB8].us = 1;
+    page_table[0xB8].rw = 1; 
+    page_table[0xB8].p = 1;
+    page_table[0xB8].addr = 0xB8;
+    flush_tlb();
+
+    memcpy((void*) ((0xB9 + old_t) * 0x1000), (const void*) (0xB8 * 0x1000), 0x1000);
+    memcpy((void*) (0xB8 * 0x1000), (const void*) ((0xB9 + cur_term_id)* 0x1000), 0x1000);
+        
+    lib_restores();
+
+    tids[t_id].active_flag = 1;
+
+
+}
+
+>>>>>>> Stashed changes

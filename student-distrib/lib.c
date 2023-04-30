@@ -3,10 +3,11 @@
 
 #include "lib.h"
 
+
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x7
+#define ATTRIB      0x6
 #define LOW_PORT    0x0F
 #define VGA_INDEX   0x3D4
 #define HIGH_PORT   0x0E
@@ -102,6 +103,21 @@ void scroll_up(void)
         vid_mem[idx] = ' ';
         vid_mem[idx + 1] = ATTRIB;
     }
+}
+
+void lib_saves(){
+    uint32_t ct_idx = cur_term_idx();
+    tids[ct_idx].x_pos = screen_x;
+    tids[ct_idx].y_pos = screen_y;
+    return;
+}
+
+void lib_restores(){
+    uint32_t ct_idx = cur_term_idx();
+    screen_x = tids[ct_idx].x_pos;
+    screen_y = tids[ct_idx].y_pos;
+    update_cursor();
+    return;
 }
 
 
@@ -253,6 +269,10 @@ int32_t puts(int8_t* s) {
  *    Function: Outputs a backspace to the console */
 void putc_backspace(void)
 {
+    if(tids[cur_term_idx()].kbrd_idx <= 0){
+        return;
+    }
+
     struct position
     {
         int x;
