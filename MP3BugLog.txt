@@ -93,3 +93,21 @@ Fix: This function was a call to open and we originally implemented it without h
 
 Bug: Fail for syserr 5 
 Fix: this was a testcase where it checked if close was outputting the right value. Turned out our bounds for our error checking were just incorrect so if a file was not open or if it was a file such as stdin on stdout that should be able to close it would end up saying that it could close and marking the item as free to be used later when that was incorrect
+
+Bug: Pagefault with terminal swap
+Fix: when we were doing our mapping for video memory we had incorrectly set the bits in our paging initialization for the new memory locations that hold information about the terminals. To solve this we changed the specific bits of the pagetables that we just initialized.
+
+Bug: Pagefault once on different terminal 
+Fix: this issue was caused by us not correctly doing the video memory memcopy commands. We ended up reading from pages other than the ones that we had specifically initialized for the different terminals.
+
+Bug: delete removing shell prompt
+Fix: when we initially implemented our keyboard and terminals we had a variable that maintained the index of the buffer to see how many things had been added. We ended up never having this check if it was at 0 when pressing backspace so it could keep deleting when it shouldn't. So we added a check in our backspace function.
+
+Bug: running the same shell in all terminals
+Fix: what was occurring was that we had a function that initialized our terminals and would iterate through them and individually run shell in them. So even though we could switch terminals it was always running through the first terminal's shell. We ended up initializing the pit and had its first 3 intervals actually interrupt execute then switch terminals and run execute. 
+
+Bug: Keyboard stops taking input once we switch terminals. 
+Fix: When we ran shell individually in each of the terminals on initialization it ended up never restoring the interrupt flags or sending and end of interrupt this stopped the keyboard handler from being able to do anything. The fix was to just add those at each individual function calls. 
+
+Bug: Keyboard would end up adding a space when we pressed the terminal switch. 
+Fix: When we implemented the work around to arrow keys being pressed we had a checker that added a space every time that we pressed a key that was considered invalid. This meant that we had to have an individual return case for each of the alt + F key presses. When we just added a return statement to each of the switch cases it made it so that we could no longer type to the keyboard after. This was due to us not including the Send EOI and sti, once we added both everything ended up working.
